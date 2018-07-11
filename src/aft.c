@@ -23,6 +23,8 @@
 
 #include "aft.h"
 #include "mapis.h"
+
+#define CONTROL_PREFIX "aft"
 // default api to print log when apihandle not avaliable
 afb_dynapi *AFB_default;
 
@@ -109,25 +111,34 @@ static int CtrlLoadOneApi(void *cbdata, AFB_ApiT apiHandle) {
 
 int afbBindingEntry(afb_dynapi *apiHandle) {
 	int status, err = 0;
-	const char *dirList = NULL, *configPath = NULL;
+	size_t len = 0;
+	char *dirList;
+	const char *prefix = CONTROL_PREFIX, *envDirList = NULL, *configPath = NULL;
 	json_object *resourcesJ = NULL, *eventsJ = NULL;
 	CtlConfigT *ctrlConfig = NULL;
 	AFB_default = apiHandle;
 
-	AFB_ApiNotice(apiHandle, "Controller in afbBindingVdyn");
+	AFB_ApiNotice(apiHandle, "Controller in afbBindingEntry");
 
-	dirList = getenv("CONTROL_CONFIG_PATH");
-	if (!dirList)
+	envDirList = getEnvDirList(prefix, "CONFIG_PATH");
+
+	if(envDirList) {
+		len = strlen(CONTROL_CONFIG_PATH) + strlen(envDirList);
+		dirList = malloc(len + 1);
+		snprintf(dirList, len + 1, "%s:%s", envDirList, CONTROL_CONFIG_PATH);
+	}
+	else {
 		dirList = CONTROL_CONFIG_PATH;
+	}
 
-	configPath = CtlConfigSearch(apiHandle, dirList, "aft");
+	configPath = CtlConfigSearch(apiHandle, dirList, prefix);
 	if (!configPath) {
 		AFB_ApiError(apiHandle, "CtlPreInit: No %s* config found in %s ", GetBinderName(), dirList);
 		return ERROR;
 	}
 
 	// load config file and create API
-	ctrlConfig = CtlLoadMetaData(apiHandle, configPath);
+	ctrlConfig = CtlLoadMetaDataUsingPrefix(apiHandle, configPath, prefix);
 	if (!ctrlConfig) {
 		AFB_ApiError(apiHandle,
 			"CtrlBindingDyn No valid control config file in:\n-- %s",
