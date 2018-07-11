@@ -25,7 +25,6 @@ end
 function _callbackError(responseJ)
   _AFT.assertStrContains(responseJ.request.info, "Ping Binder Daemon fails")
 end
-
 function _callbackEvent(eventName, eventData)
   _AFT.assertEquals(eventData, {data = { key = 'weird others data', another_key = 123.456 }})
 end
@@ -34,6 +33,9 @@ _AFT.addEventToMonitor("hello/anEvent")
 _AFT.addEventToMonitor("hello/anotherEvent", _callbackEvent)
 
 _AFT.testVerbStatusSuccess('testPingSuccess','hello', 'ping', {})
+_AFT.setBefore("testPingSuccess",function() print("~~~~~ Begin testPingSuccess ~~~~~") end)
+_AFT.setAfter("testPingSuccess",function() print("~~~~~ End testPingSuccess ~~~~~") end)
+
 _AFT.testVerbResponseEquals('testPingSuccessAndResponse','hello', 'ping', {}, "Some String")
 _AFT.testVerbResponseEquals('testPingSuccessResponseFail','hello', 'ping', {}, "Unexpected String")
 _AFT.testVerbCb('testPingSuccessCallback','hello', 'ping', {}, _callback)
@@ -53,9 +55,5 @@ _AFT.testVerbStatusSuccess('testEventPushanotherEvent', 'hello', 'eventpush', {t
 
 _AFT.testVerbStatusSuccess('testGenerateWarning', 'hello', 'verbose', {level = 4, message = 'My Warning message!'})
 
-_AFT.testEvtReceived("testanEventReceived", "hello/anEvent")
-_AFT.testEvtReceived("testanotherEventReceived", "hello/anotherEvent")
-
-_AFT.describe("mytest", function()
-  _AFT.assertEquals(false, false)
-end)
+_AFT.testEvtReceived("testanEventReceived", "hello/anEvent",3000000)
+_AFT.testEvtReceived("testanotherEventReceived", "hello/anotherEvent",3000000)

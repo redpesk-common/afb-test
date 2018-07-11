@@ -284,11 +284,12 @@ end
 
 function _AFT.setBefore(testName, beforeTestFunction)
 	if type(beforeTestFunction) == "function" then
-		for _,item in pairs(_AFT.test_list) do
-			if item[0] == testName then
-				item[1].setUp = function()
+		for _,item in pairs(_AFT.tests_list) do
+			if item[1] == testName then
+				local setUp_old = item[2].setup
+				item[2].setUp = function()
 					beforeTestFunction()
-					item[1].setUp()
+					if setUp_old then setUp_old() end
 				end
 			end
 		end
@@ -299,10 +300,11 @@ end
 
 function _AFT.setAfter(testName, afterTestFunction)
 	if type(afterTestFunction) == "function" then
-		for _,item in pairs(_AFT.test_list) do
-			if item[0] == testName then
-				item[1].setUp = function()
-					item[1].tearDown()
+		for _,item in pairs(_AFT.tests_list) do
+			if item[1] == testName then
+				local tearDown_old = item[2].tearDown
+				item[2].tearDown = function()
+					if tearDown_old then tearDown_old() end
 					afterTestFunction()
 				end
 			end

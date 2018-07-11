@@ -4,13 +4,13 @@
     "metadata": {
         "uid": "Test",
         "version": "1.0",
-        "api": "test",
+        "api": "afTest",
         "info": "Binding made to tests other bindings",
         "require": [
             "hello"
         ]
     },
-    "onload": {
+    "testVerb": {
         "uid": "launch_all_tests",
         "info": "Launch all the tests",
         "action": "lua://AFT#_launch_test",
