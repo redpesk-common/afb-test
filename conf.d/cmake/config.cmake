@@ -19,7 +19,7 @@
 # Project Info
 # ------------------
 set(PROJECT_NAME afb-test)
-set(PROJECT_VERSION "5.0")
+set(PROJECT_VERSION "6.0")
 set(PROJECT_PRETTY_NAME "Application Framework Test")
 set(PROJECT_DESCRIPTION "Binding used to test other binding")
 set(PROJECT_URL "https://github.com/iotbzh/afb-test")
@@ -163,7 +163,7 @@ set(WIDGET_TYPE application/vnd.agl.service)
 # This is the file that will be executed, loaded,
 # at launch time by the application framework.
 #
-set(WIDGET_ENTRY_POINT lib/afb-test.so)
+set(WIDGET_ENTRY_POINT lib/aft.so)
 
 # Optional dependencies order
 # ---------------------------
