@@ -22,13 +22,6 @@ local lu = require('luaunit')
 lu.LuaUnit:setOutputType('JUNIT')
 lu.LuaUnit.fname = "var/jUnitResults.xml"
 
--- Use our own print function to redirect it to a file the standard output
-_standard_print = print
-print = function(...)
-	io.write(... .. '\n')
-	_standard_print(...)
-end
-
 _AFT = {
 	exit = {0, code},
 	context = _ctx,
@@ -56,6 +49,15 @@ end
 
 function _AFT.exitAtEnd(code)
 	_AFT.exit = {1, code}
+end
+
+-- Use our own print function to redirect it to a file in the workdir of the
+-- binder instead of the standard output.
+_AFT.setOutputFile("test_results.log")
+_standard_print = print
+print = function(...)
+	io.write(... .. '\n')
+	_standard_print(...)
 end
 
 --[[
@@ -467,7 +469,6 @@ function _launch_test(context, args)
 
 	-- Prepare the tests execution configuring the monitoring and loading
 	-- lua test files to execute in the Framework.
-	_AFT.setOutputFile("var/test_results.log")
 	AFB:servsync(_AFT.context, "monitor", "set", { verbosity = "debug" })
 	AFB:servsync(_AFT.context, "monitor", "trace", { add = { api = args.trace, request = "vverbose", event = "push_after" }})
 	if args.files and type(args.files) == 'table' then
