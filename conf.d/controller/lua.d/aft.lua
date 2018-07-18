@@ -22,6 +22,14 @@ local lu = require('luaunit')
 lu.LuaUnit:setOutputType('JUNIT')
 lu.LuaUnit.fname = "xUnitResults.xml"
 
+local function table_size(t)
+	local size = 0
+	for _,_ in pairs(t) do
+		size = size + 1
+	end
+	return size
+end
+
 _AFT = {
 	exit = {0, code},
 	context = _ctx,
@@ -98,71 +106,151 @@ function _AFT.registerData(dict, eventData)
 	end
 end
 
-function _AFT.requestDaemonEventHandler(eventObj)
-	local eventName = eventObj.data.message
-	local log = _AFT.monitored_events[eventName]
-	local api = nil
+function _AFT.bindingEventHandler(eventObj, uid)
+	local eventName = nil
+	local eventListeners = nil
+	local data = nil
 
-	if eventObj.daemon then
-		api = eventObj.daemon.api
-	elseif eventObj.request then
-		api = eventObj.request.api
+	if uid then
+		eventName = uid
+		data = eventObj
+	elseif eventObj.event.name then
+		eventName = eventObj.event.name
+		eventListeners = eventObj.data.result
+		-- Remove from event to hold the bare event data and be able to assert it
+		eventObj.data.result = nil
+		data = eventObj.data
 	end
-
-	if log and log.api == api and log.type == eventObj.data.type then
-		_AFT.incrementCount(_AFT.monitored_events[eventName])
-		_AFT.registerData(_AFT.monitored_events[eventName], eventObj.data)
-	end
-
-end
-
-function _AFT.bindingEventHandler(eventObj)
-	local eventName = eventObj.event.name
-	local eventListeners = eventObj.data.result
-
-	-- Remove from event to hold the bare event data and be able to assert it
-	eventObj.data.result = nil
 
 	if type(_AFT.monitored_events[eventName]) == 'table' then
-		_AFT.monitored_events[eventName].eventListeners = eventListeners
+		if eventListeners then
+			_AFT.monitored_events[eventName].eventListeners = eventListeners
+		end
 
 		_AFT.incrementCount(_AFT.monitored_events[eventName])
-		_AFT.registerData(_AFT.monitored_events[eventName], eventObj.data)
+		_AFT.registerData(_AFT.monitored_events[eventName], data)
 	end
 end
 
-function _evt_catcher_ (source, action, eventObj)
-	if eventObj.type == "event" then
-		_AFT.bindingEventHandler(eventObj)
-	elseif eventObj.type == "daemon" or eventObj.type == "request" then
-		_AFT.requestDaemonEventHandler(eventObj)
+function _evt_catcher_(source, action, eventObj)
+	local uid = AFB:getuid(source)
+	if uid == "monitor/trace" then
+		if eventObj.type == "event" then
+			_AFT.bindingEventHandler(eventObj)
+		end
+	else
+		_AFT.bindingEventHandler(eventObj, uid)
 	end
+end
+
+function _AFT.lockWait(eventName, timeout)
+	if type(eventName) ~= "string" then
+		print("Error: wrong argument given to wait an event. 1st argument should be a string")
+		return 0
+	end
+
+	local count = 0
+	if _AFT.monitored_events[eventName].receivedCount and timeout then
+		count = _AFT.monitored_events[eventName].receivedCount
+	end
+
+	while timeout > 0 do
+		timeout = AFB:lockwait(_AFT.context, timeout)
+		AFB:lockwait(_AFT.context, 0) --without it _evt_catcher_ cannot received event
+
+		if _AFT.monitored_events[eventName].receivedCount == count + 1 then
+		return 1
+		end
+	end
+	return 0
+end
+
+function _AFT.lockWaitGroup(eventGroup, timeout)
+	if type(eventGroup) ~= "table" then
+		print("Error: wrong argument given to wait a group of events. 1st argument should be a table")
+		return 0
+	end
+	local eventGroupCpy = {table.unpack(eventGroup)}
+
+	while timeout > 0 do
+		timeout = AFB:lockwait(_AFT.context, timeout)
+		AFB:lockwait(_AFT.context, 0) --without it _evt_catcher_ cannot received event
+
+		for key,event in pairs(eventGroupCpy) do
+			if _AFT.monitored_events[event.name].receivedCount == event.receivedCount + 1 then
+				eventGroupCpy[key] = nil
+			end
+		end
+		if table_size(eventGroupCpy) == 0 then return 1 end
+	end
+	return 0
 end
 
 --[[
   Assert and test functions about the event part.
 ]]
 
-function _AFT.lockwait(eventName, timeout)
-    local count = 0
-	if _AFT.monitored_events[eventName].receivedCount then
-        if timeout then
-		    count = _AFT.monitored_events[eventName].receivedCount
-        end
+function _AFT.assertEvtGrpNotReceived(eventGroup, timeout)
+	local count = 0
+	local eventName = ""
+	for _,event in pairs(eventGroup) do
+		eventGroup[key] = {name = event, receivedCount = _AFT.monitored_events[event].receivedCount}
 	end
 
-    while timeout > 0 do
-        timeout = AFB:lockwait(_AFT.context, timeout)
-        AFB:lockwait(_AFT.context, 0) --without it ev catcher cannot received event
-        if _AFT.monitored_events[eventName].receivedCount == count + 1 then
-            return 1
-        end
-    end
-    return 0
+	if timeout then
+		count = _AFT.lockWaitGroup(eventGroup, timeout)
+	else
+		for _,v in pairs(eventGroup) do
+			count = count + v.count
+		end
+	end
+
+	for _,event in pairs(eventGroup) do
+		eventName = eventName .. " " .. event.name
+	end
+	_AFT.assertIsTrue(count == 0, "One of the following events has been received: '".. eventName .."' but it shouldn't")
+
+	for _,event in pairs(eventGroup) do
+		if _AFT.monitored_events[event.name].cb then
+			local data_n = table_size(_AFT.monitored_events[event.name].data)
+			_AFT.monitored_events[event.name].cb(v.name, _AFT.monitored_events[event.name].data[data_n])
+		end
+	end
+end
+
+function _AFT.assertEvtGrpReceived(eventGroup, timeout)
+	local count = 0
+	local eventName = ""
+	for key,event in pairs(eventGroup) do
+		eventGroup[key] = {name = event, receivedCount = _AFT.monitored_events[event].receivedCount}
+	end
+
+	if timeout then
+		count = _AFT.lockWaitGroup(eventGroup, timeout)
+	else
+		for _,v in pairs(eventGroup) do
+			count = count + v.receivedCount
+		end
+	end
+
+	for _,event in pairs(eventGroup) do
+		eventName = eventName .. " " .. event.name
+	end
+	_AFT.assertIsTrue(count >= table_size(eventGroup), "None or one of the following events: '".. eventName .."' has not been received")
+
+	for _,event in pairs(eventGroup) do
+		if _AFT.monitored_events[event.name].cb then
+			local data_n = table_size(_AFT.monitored_events[event.name].data)
+			_AFT.monitored_events[event.name].cb(v.name, _AFT.monitored_events[event.name].data[data_n])
+		end
+	end
 end
 
 function _AFT.assertEvtNotReceived(eventName, timeout)
-	local count = _AFT.lockwait(eventName, timeout)
+	local count = _AFT.monitored_events[eventName].receivedCount
+	if timeout then
+		count = _AFT.lockWait(eventName, timeout)
+	end
 
 	_AFT.assertIsTrue(count == 0, "Event '".. eventName .."' received but it shouldn't")
 
@@ -173,7 +261,10 @@ function _AFT.assertEvtNotReceived(eventName, timeout)
 end
 
 function _AFT.assertEvtReceived(eventName, timeout)
-	local count = _AFT.lockwait(eventName, timeout)
+	local count = _AFT.monitored_events[eventName].receivedCount
+	if timeout then
+		count = _AFT.lockWait(eventName, timeout)
+	end
 
 	_AFT.assertIsTrue(count > 0, "No event '".. eventName .."' received")
 
@@ -460,8 +551,10 @@ local function call_tests()
 	local failures="Failures : "..tostring(lu.LuaUnit.result.testCount-lu.LuaUnit.result.passedCount)
 
 	local evtHandle = AFB:evtmake(_AFT.context, 'results')
-	AFB:subscribe(_AFT.context,evtHandle)
-	AFB:evtpush(_AFT.context,evtHandle,{info = success.." "..failures})
+	if type(evtHandle) == "userdata" then
+		AFB:subscribe(_AFT.context,evtHandle)
+		AFB:evtpush(_AFT.context,evtHandle,{info = success.." "..failures})
+	end
 end
 
 function _launch_test(context, args)
@@ -470,7 +563,15 @@ function _launch_test(context, args)
 	-- Prepare the tests execution configuring the monitoring and loading
 	-- lua test files to execute in the Framework.
 	AFB:servsync(_AFT.context, "monitor", "set", { verbosity = "debug" })
-	AFB:servsync(_AFT.context, "monitor", "trace", { add = { api = args.trace, request = "vverbose", event = "push_after" }})
+	if type(args.trace) == "string" then
+		AFB:servsync(_AFT.context, "monitor", "trace", { add = { api = args.trace, request = "vverbose", event = "push_after" }})
+	elseif type(args.trace) == "table" then
+		for _,v in pairs(args.trace) do
+			if type(v) == "string" then
+				AFB:servsync(_AFT.context, "monitor", "trace", { add = { api = v, request = "vverbose", event = "push_after" }})
+			end
+		end
+	end
 	if args.files and type(args.files) == 'table' then
 		for _,f in pairs(args.files) do
 			dofile('var/'..f)

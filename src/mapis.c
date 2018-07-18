@@ -16,8 +16,9 @@
  * limitations under the License.
  */
 
+#include <string.h>
 #include <mapis.h>
-#include <ctl-plugin.h>
+#include <ctl-config.h>
 
 struct mapisHandleT {
 	AFB_ApiT mainApiHandle;
@@ -27,11 +28,11 @@ struct mapisHandleT {
 	json_object *eventsJ;
 };
 
-static int LoadOneMapi(void *data, AFB_ApiT apiHandle)
-{
-	int savedCount = 0, count = 0;
+static int LoadOneMapi(void *data, AFB_ApiT apiHandle) {
+	int savedCount = 0, count = 0, idx = 0;
 	CtlActionT *savedActions = NULL, *newActions = NULL;
 	struct mapisHandleT *mapisHandle = (struct mapisHandleT*)data;
+	CtlConfigT *ctrlConfig = afb_dynapi_get_userdata(mapisHandle->mainApiHandle);
 
 	if(PluginConfig(apiHandle, mapisHandle->section, mapisHandle->mapiJ)) {
 		AFB_ApiError(apiHandle, "Problem loading the plugin as an API for %s, see log message above", json_object_get_string(mapisHandle->mapiJ));
@@ -45,7 +46,12 @@ static int LoadOneMapi(void *data, AFB_ApiT apiHandle)
 	}
 
 	// Add actions to the section to be able to respond to defined events.
-	savedActions = mapisHandle->section->actions;
+	for(idx = 0; ctrlConfig->sections[idx].key != NULL; ++idx) {
+		if(! strcasecmp(ctrlConfig->sections[idx].key, "events")) {
+			savedActions = ctrlConfig->sections[idx].actions;
+			break;
+		}
+	}
 	newActions = ActionConfig(apiHandle, mapisHandle->eventsJ, 0);
 
 	if(savedActions) {
@@ -71,10 +77,10 @@ static int LoadOneMapi(void *data, AFB_ApiT apiHandle)
 	while(newActions[savedCount].uid != NULL && count <= total) {
 		mergedActions[count] = newActions[savedCount];
 		count++;
-		savedActions++;
+		savedCount++;
 	}
 
-	mapisHandle->section->actions = mergedActions;
+	ctrlConfig->sections[idx].actions = mergedActions;
 
 	// declare an event event manager for this API;
 	afb_dynapi_on_event(apiHandle, CtrlDispatchApiEvent);
@@ -96,8 +102,8 @@ static void OneMapiConfig(void *data, json_object *mapiJ) {
 					"lua", NULL,
 					"verbs", &mapisHandle->verbsJ,
 					"events", &mapisHandle->eventsJ)) {
-		AFB_ApiError(mapisHandle->mainApiHandle, "Wrong mapis specification, missing uid|[info]|[spath]|libs|[lua]|verbs|[events] for %s", json_object_get_string(mapiJ));
-		return;
+			AFB_ApiError(mapisHandle->mainApiHandle, "Wrong mapis specification, missing uid|[info]|[spath]|libs|[lua]|verbs|[events] for %s", json_object_get_string(mapiJ));
+			return;
 		}
 
 		json_object_get(mapisHandle->verbsJ);

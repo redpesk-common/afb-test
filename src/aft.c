@@ -62,7 +62,7 @@ static AFB_ApiVerbs CtrlApiVerbs[] = {
 static int CtrlLoadStaticVerbs(afb_dynapi *apiHandle, AFB_ApiVerbs *verbs) {
 	int errcount = 0;
 
-	for (int idx = 0; verbs[idx].verb; idx++) {
+	for(int idx = 0; verbs[idx].verb; idx++) {
 		errcount += afb_dynapi_add_verb(
 				apiHandle, CtrlApiVerbs[idx].verb, NULL, CtrlApiVerbs[idx].callback,
 				(void *)&CtrlApiVerbs[idx], CtrlApiVerbs[idx].auth, 0);
@@ -91,7 +91,7 @@ static int CtrlLoadOneApi(void *cbdata, AFB_ApiT apiHandle) {
 
 	// add static controls verbs
 	int err = CtrlLoadStaticVerbs(apiHandle, CtrlApiVerbs);
-	if (err) {
+	if(err) {
 		AFB_ApiError(apiHandle, "CtrlLoadSection fail to register static V2 verbs");
 		return ERROR;
 	}
@@ -132,21 +132,21 @@ int afbBindingEntry(afb_dynapi *apiHandle) {
 	}
 
 	configPath = CtlConfigSearch(apiHandle, dirList, prefix);
-	if (!configPath) {
+	if(!configPath) {
 		AFB_ApiError(apiHandle, "CtlPreInit: No %s* config found in %s ", GetBinderName(), dirList);
 		return ERROR;
 	}
 
 	// load config file and create API
 	ctrlConfig = CtlLoadMetaDataUsingPrefix(apiHandle, configPath, prefix);
-	if (!ctrlConfig) {
+	if(!ctrlConfig) {
 		AFB_ApiError(apiHandle,
 			"CtrlBindingDyn No valid control config file in:\n-- %s",
 			configPath);
 		return ERROR;
 	}
 
-	if (!ctrlConfig->api) {
+	if(!ctrlConfig->api) {
 		AFB_ApiError(apiHandle,
 			"CtrlBindingDyn API Missing from metadata in:\n-- %s",
 			configPath);
