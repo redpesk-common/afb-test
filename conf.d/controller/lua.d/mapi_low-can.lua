@@ -27,6 +27,14 @@ function _unsubscribe(source, args)
 end
 
 function _get(source, args)
+  local evtHandle1 = AFB:evtmake(source, 'messages_engine_speed')
+  local evtHandle2 = AFB:evtmake(source, 'messages_vehicle_speed')
+	if type(evtHandle1) == "userdata" and type(evtHandle2) == "userdata" then
+		AFB:subscribe(source, evtHandle1)
+    AFB:evtpush(source,evtHandle1,{value = 1234})
+    AFB:subscribe(source, evtHandle2)
+		AFB:evtpush(source,evtHandle2,{value = 5678})
+	end
   AFB:success(source)
 end
 

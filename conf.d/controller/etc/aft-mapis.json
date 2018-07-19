@@ -61,6 +61,9 @@
         },{
             "uid": "low-can/messages_engine_speed",
             "action": "lua://AFT#_evt_catcher_"
+        },{
+            "uid": "low-can/messages_vehicle_speed",
+            "action": "lua://AFT#_evt_catcher_"
         }]
     }]
 }
