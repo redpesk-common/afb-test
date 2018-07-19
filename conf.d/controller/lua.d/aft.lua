@@ -20,7 +20,7 @@
 
 local lu = require('luaunit')
 lu.LuaUnit:setOutputType('JUNIT')
-lu.LuaUnit.fname = "var/jUnitResults.xml"
+lu.LuaUnit.fname = "xUnitResults.xml"
 
 _AFT = {
 	exit = {0, code},
