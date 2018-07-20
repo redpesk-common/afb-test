@@ -106,6 +106,17 @@ function _AFT.registerData(dict, eventData)
 	end
 end
 
+function _AFT.triggerEvtCallback(eventName)
+	if _AFT.monitored_events[eventName].cb then
+		local data_n = table_size(_AFT.monitored_events[event.name].data)
+		if _AFT.event_history == true then
+			_AFT.monitored_events[event.name].cb(v.name, _AFT.monitored_events[event.name].data[data_n], _AFT.monitored_events[event.name].data)
+		else
+			_AFT.monitored_events[event.name].cb(v.name, _AFT.monitored_events[event.name].data[data_n])
+		end
+	end
+end
+
 function _AFT.bindingEventHandler(eventObj, uid)
 	local eventName = nil
 	local eventListeners = nil
@@ -211,10 +222,7 @@ function _AFT.assertEvtGrpNotReceived(eventGroup, timeout)
 	_AFT.assertIsTrue(count == 0, "One of the following events has been received: '".. eventName .."' but it shouldn't")
 
 	for _,event in pairs(eventGroup) do
-		if _AFT.monitored_events[event.name].cb then
-			local data_n = table_size(_AFT.monitored_events[event.name].data)
-			_AFT.monitored_events[event.name].cb(v.name, _AFT.monitored_events[event.name].data[data_n])
-		end
+		_AFT.triggerEvtCallback(event.name)
 	end
 end
 
@@ -239,10 +247,7 @@ function _AFT.assertEvtGrpReceived(eventGroup, timeout)
 	_AFT.assertIsTrue(count >= table_size(eventGroup), "None or one of the following events: '".. eventName .."' has not been received")
 
 	for _,event in pairs(eventGroup) do
-		if _AFT.monitored_events[event.name].cb then
-			local data_n = table_size(_AFT.monitored_events[event.name].data)
-			_AFT.monitored_events[event.name].cb(v.name, _AFT.monitored_events[event.name].data[data_n])
-		end
+		_AFT.triggerEvtCallback(event.name)
 	end
 end
 
@@ -254,10 +259,7 @@ function _AFT.assertEvtNotReceived(eventName, timeout)
 
 	_AFT.assertIsTrue(count == 0, "Event '".. eventName .."' received but it shouldn't")
 
-	if _AFT.monitored_events[eventName].cb then
-		local data_n = #_AFT.monitored_events[eventName].data
-		_AFT.monitored_events[eventName].cb(eventName, _AFT.monitored_events[eventName].data[data_n])
-	end
+	_AFT.triggerEvtCallback(event.name)
 end
 
 function _AFT.assertEvtReceived(eventName, timeout)
@@ -268,10 +270,7 @@ function _AFT.assertEvtReceived(eventName, timeout)
 
 	_AFT.assertIsTrue(count > 0, "No event '".. eventName .."' received")
 
-	if _AFT.monitored_events[eventName].cb then
-		local data_n = #_AFT.monitored_events[eventName].data
-		_AFT.monitored_events[eventName].cb(eventName, _AFT.monitored_events[eventName].data[data_n])
-	end
+	_AFT.triggerEvtCallback(event.name)
 end
 
 function _AFT.testEvtNotReceived(testName, eventName, timeout, setUp, tearDown)
