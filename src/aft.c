@@ -26,7 +26,7 @@
 
 #define CONTROL_PREFIX "aft"
 // default api to print log when apihandle not avaliable
-afb_dynapi *AFB_default;
+afb_api_t AFB_default;
 static int CtrlCreateApi(AFB_ApiT apiHandle, const char *configPath);
 
 // Config Section definition
@@ -70,13 +70,13 @@ static AFB_ApiVerbs CtrlApiVerbs[] = {
 	{.verb = NULL} /* marker for end of the array */
 };
 
-static int CtrlLoadStaticVerbs(afb_dynapi *apiHandle, AFB_ApiVerbs *verbs) {
+static int CtrlLoadStaticVerbs(afb_api_t apiHandle, AFB_ApiVerbs *verbs) {
 	int errcount = 0;
 
 	for(int idx = 0; verbs[idx].verb; idx++) {
-		errcount += afb_dynapi_add_verb(
+		errcount += afb_api_add_verb(
 				apiHandle, CtrlApiVerbs[idx].verb, NULL, CtrlApiVerbs[idx].callback,
-				(void *)&CtrlApiVerbs[idx], CtrlApiVerbs[idx].auth, 0);
+				(void *)&CtrlApiVerbs[idx], CtrlApiVerbs[idx].auth, 0, 0);
 	}
 
 	return errcount;
@@ -86,7 +86,7 @@ static int CtrlInitOneApi(AFB_ApiT apiHandle) {
 	// Hugely hack to make all V2 AFB_DEBUG to work in fileutils
 	AFB_default = apiHandle;
 
-	CtlConfigT *ctrlConfig = afb_dynapi_get_userdata(apiHandle);
+	CtlConfigT *ctrlConfig = afb_api_get_userdata(apiHandle);
 
 	return CtlConfigExec(apiHandle, ctrlConfig);
 }
@@ -98,7 +98,7 @@ static int CtrlLoadOneApi(void *cbdata, AFB_ApiT apiHandle) {
 	CtlConfigT *ctrlConfig = (CtlConfigT *)cbdata;
 
 	// save closure as api's data context
-	afb_dynapi_set_userdata(apiHandle, ctrlConfig);
+	afb_api_set_userdata(apiHandle, ctrlConfig);
 
 	// add static controls verbs
 	int err = CtrlLoadStaticVerbs(apiHandle, CtrlApiVerbs);
@@ -111,12 +111,12 @@ static int CtrlLoadOneApi(void *cbdata, AFB_ApiT apiHandle) {
 	err = CtlLoadSections(apiHandle, ctrlConfig, ctrlSections);
 
 	// declare an event event manager for this API;
-	afb_dynapi_on_event(apiHandle, CtrlDispatchApiEvent);
+	afb_api_on_event(apiHandle, CtrlDispatchApiEvent);
 
 	// init API function (does not receive user closure ???
-	afb_dynapi_on_init(apiHandle, CtrlInitOneApi);
+	afb_api_on_init(apiHandle, CtrlInitOneApi);
 
-	afb_dynapi_seal(apiHandle);
+	afb_api_seal(apiHandle);
 	return err;
 }
 
@@ -158,12 +158,12 @@ static int CtrlCreateApi(AFB_ApiT apiHandle, const char *configPath) {
 	wrap_json_object_add(ctrlConfig->configJ, resourcesJ);
 	wrap_json_object_add(ctrlConfig->configJ, eventsJ);
 
-	err = afb_dynapi_new_api(apiHandle, ctrlConfig->api, ctrlConfig->info, 1, CtrlLoadOneApi, ctrlConfig);
-
-	return err;
+	if(afb_api_new_api(apiHandle, ctrlConfig->api, ctrlConfig->info, 1, CtrlLoadOneApi, ctrlConfig))
+		return err;
+	return -1;
 }
 
-int afbBindingEntry(afb_dynapi *apiHandle) {
+int afbBindingEntry(afb_api_t apiHandle) {
 	size_t len = 0;
 	char *dirList;
 	const char *envDirList = NULL, *configPath = NULL;

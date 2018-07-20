@@ -32,7 +32,7 @@ static int LoadOneMapi(void *data, AFB_ApiT apiHandle) {
 	int savedCount = 0, count = 0, idx = 0;
 	CtlActionT *savedActions = NULL, *newActions = NULL;
 	struct mapisHandleT *mapisHandle = (struct mapisHandleT*)data;
-	CtlConfigT *ctrlConfig = afb_dynapi_get_userdata(mapisHandle->mainApiHandle);
+	CtlConfigT *ctrlConfig = afb_api_get_userdata(mapisHandle->mainApiHandle);
 
 	if(PluginConfig(apiHandle, mapisHandle->section, mapisHandle->mapiJ)) {
 		AFB_ApiError(apiHandle, "Problem loading the plugin as an API for %s, see log message above", json_object_get_string(mapisHandle->mapiJ));
@@ -83,7 +83,7 @@ static int LoadOneMapi(void *data, AFB_ApiT apiHandle) {
 	ctrlConfig->sections[idx].actions = mergedActions;
 
 	// declare an event event manager for this API;
-	afb_dynapi_on_event(apiHandle, CtrlDispatchApiEvent);
+	afb_api_on_event(apiHandle, CtrlDispatchApiEvent);
 
 	return 0;
 }
@@ -112,7 +112,7 @@ static void OneMapiConfig(void *data, json_object *mapiJ) {
 		json_object_object_del(mapiJ, "events");
 		mapisHandle->mapiJ = mapiJ;
 
-		if (afb_dynapi_new_api(mapisHandle->mainApiHandle, uid, info, 1, LoadOneMapi, (void*)mapisHandle)) {
+		if (afb_api_new_api(mapisHandle->mainApiHandle, uid, info, 1, LoadOneMapi, (void*)mapisHandle)) {
 			AFB_ApiError(mapisHandle->mainApiHandle, "Error creating new api: %s", uid);
 			return;
 		}
