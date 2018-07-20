@@ -27,6 +27,7 @@
 #define CONTROL_PREFIX "aft"
 // default api to print log when apihandle not avaliable
 afb_dynapi *AFB_default;
+static int CtrlCreateApi(AFB_ApiT apiHandle, const char *configPath);
 
 // Config Section definition
 static CtlSectionT ctrlSections[] = {
@@ -45,8 +46,17 @@ static void ctrlapi_ping(AFB_ReqT request) {
 	AFB_ReqSuccess(request, json_object_new_int(count), NULL);
 }
 
-static void ctrlapi_exit(AFB_ReqT request) {
+static void ctrlapi_load(AFB_ReqT request) {
+	const char *configPath = afb_req_value(request, "filepath");
+	afb_api_t apiHandle = afb_req_get_api(request);
 
+	if(!CtrlCreateApi(apiHandle, configPath))
+		AFB_ReqSuccess(request, NULL, NULL);
+	else
+		AFB_ReqFailF(request, "Error", "Not able to load test API with the configuration file: %s", configPath);
+}
+
+static void ctrlapi_exit(AFB_ReqT request) {
 	AFB_ReqNotice(request, "Exiting...");
 	AFB_ReqSuccess(request, NULL, NULL);
 	exit(0);
@@ -55,6 +65,7 @@ static void ctrlapi_exit(AFB_ReqT request) {
 static AFB_ApiVerbs CtrlApiVerbs[] = {
 	/* VERB'S NAME         FUNCTION TO CALL         SHORT DESCRIPTION */
 	{.verb = "ping", .callback = ctrlapi_ping, .info = "ping test for API"},
+	{.verb = "load", .callback = ctrlapi_load, .info = "load a API meant to launch test for a binding"},
 	{.verb = "exit", .callback = ctrlapi_exit, .info = "Exit test"},
 	{.verb = NULL} /* marker for end of the array */
 };
@@ -109,36 +120,12 @@ static int CtrlLoadOneApi(void *cbdata, AFB_ApiT apiHandle) {
 	return err;
 }
 
-int afbBindingEntry(afb_dynapi *apiHandle) {
-	int status, err = 0;
-	size_t len = 0;
-	char *dirList;
-	const char *prefix = CONTROL_PREFIX, *envDirList = NULL, *configPath = NULL;
+static int CtrlCreateApi(AFB_ApiT apiHandle, const char *configPath) {
+	int err = 0;
 	json_object *resourcesJ = NULL, *eventsJ = NULL;
 	CtlConfigT *ctrlConfig = NULL;
-	AFB_default = apiHandle;
-
-	AFB_ApiNotice(apiHandle, "Controller in afbBindingEntry");
-
-	envDirList = getEnvDirList(prefix, "CONFIG_PATH");
-
-	if(envDirList) {
-		len = strlen(CONTROL_CONFIG_PATH) + strlen(envDirList);
-		dirList = malloc(len + 1);
-		snprintf(dirList, len + 1, "%s:%s", envDirList, CONTROL_CONFIG_PATH);
-	}
-	else {
-		dirList = CONTROL_CONFIG_PATH;
-	}
-
-	configPath = CtlConfigSearch(apiHandle, dirList, prefix);
-	if(!configPath) {
-		AFB_ApiError(apiHandle, "CtlPreInit: No %s* config found in %s ", GetBinderName(), dirList);
-		return ERROR;
-	}
-
-	// load config file and create API
-	ctrlConfig = CtlLoadMetaDataUsingPrefix(apiHandle, configPath, prefix);
+// load config file and create API
+	ctrlConfig = CtlLoadMetaDataUsingPrefix(apiHandle, configPath, CONTROL_PREFIX);
 	if(!ctrlConfig) {
 		AFB_ApiError(apiHandle,
 			"CtrlBindingDyn No valid control config file in:\n-- %s",
@@ -171,8 +158,35 @@ int afbBindingEntry(afb_dynapi *apiHandle) {
 	wrap_json_object_add(ctrlConfig->configJ, resourcesJ);
 	wrap_json_object_add(ctrlConfig->configJ, eventsJ);
 
-	// create one API per config file (Pre-V3 return code ToBeChanged)
-	status = afb_dynapi_new_api(apiHandle, ctrlConfig->api, ctrlConfig->info, 1, CtrlLoadOneApi, ctrlConfig);
+	err = afb_dynapi_new_api(apiHandle, ctrlConfig->api, ctrlConfig->info, 1, CtrlLoadOneApi, ctrlConfig);
 
-	return status;
+	return err;
+}
+
+int afbBindingEntry(afb_dynapi *apiHandle) {
+	size_t len = 0;
+	char *dirList;
+	const char *envDirList = NULL, *configPath = NULL;
+	AFB_default = apiHandle;
+
+	AFB_ApiNotice(apiHandle, "Controller in afbBindingEntry");
+
+	envDirList = getEnvDirList(CONTROL_PREFIX, "CONFIG_PATH");
+
+	if(envDirList) {
+		len = strlen(CONTROL_CONFIG_PATH) + strlen(envDirList);
+		dirList = malloc(len + 1);
+		snprintf(dirList, len + 1, "%s:%s", envDirList, CONTROL_CONFIG_PATH);
+	}
+	else {
+		dirList = CONTROL_CONFIG_PATH;
+	}
+
+	configPath = CtlConfigSearch(apiHandle, dirList, CONTROL_PREFIX);
+	if(!configPath) {
+		AFB_ApiError(apiHandle, "CtlPreInit: No %s* config found in %s ", GetBinderName(), dirList);
+		return ERROR;
+	}
+
+	return CtrlCreateApi(apiHandle, configPath);
 }
