@@ -18,7 +18,7 @@
 
 # Project Info
 # ------------------
-set(PROJECT_NAME afb-test)
+set(PROJECT_NAME afTest)
 set(PROJECT_VERSION "6.0")
 set(PROJECT_PRETTY_NAME "Application Framework Test")
 set(PROJECT_DESCRIPTION "Binding used to test other binding")
