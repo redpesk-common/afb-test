@@ -55,5 +55,8 @@ _AFT.testVerbStatusSuccess('testEventPushanotherEvent', 'hello', 'eventpush', {t
 
 _AFT.testVerbStatusSuccess('testGenerateWarning', 'hello', 'verbose', {level = 4, message = 'My Warning message!'})
 
-_AFT.testEvtReceived("testanEventReceived", "hello/anEvent",3000000)
-_AFT.testEvtReceived("testanotherEventReceived", "hello/anotherEvent",3000000)
+_AFT.testEvtGrpReceived("testEventGroupReceived",{"hello/anEvent","hello/anotherEvent"},300000)
+_AFT.testEvtGrpNotReceived("testEventGroupNotReceived",{"hello/anEvent","hello/anotherEvent"},300000)
+
+_AFT.testEvtReceived("testanEventReceived", "hello/anEvent",300000)
+_AFT.testEvtReceived("testanotherEventReceived", "hello/anotherEvent",300000)

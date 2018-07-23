@@ -108,11 +108,13 @@ end
 
 function _AFT.triggerEvtCallback(eventName)
 	if _AFT.monitored_events[eventName].cb then
-		local data_n = table_size(_AFT.monitored_events[event.name].data)
-		if _AFT.event_history == true then
-			_AFT.monitored_events[event.name].cb(v.name, _AFT.monitored_events[event.name].data[data_n], _AFT.monitored_events[event.name].data)
-		else
-			_AFT.monitored_events[event.name].cb(v.name, _AFT.monitored_events[event.name].data[data_n])
+		if _AFT.monitored_events[eventName].data ~= nil then
+			local data_n = table_size(_AFT.monitored_events[eventName].data)
+			if _AFT.event_history == true then
+				_AFT.monitored_events[eventName].cb(v.name, _AFT.monitored_events[eventName].data[data_n], _AFT.monitored_events[eventName].data)
+			else
+				_AFT.monitored_events[eventName].cb(v.name, _AFT.monitored_events[eventName].data[data_n])
+			end
 		end
 	end
 end
@@ -204,7 +206,7 @@ end
 function _AFT.assertEvtGrpNotReceived(eventGroup, timeout)
 	local count = 0
 	local eventName = ""
-	for _,event in pairs(eventGroup) do
+	for key,event in pairs(eventGroup) do
 		eventGroup[key] = {name = event, receivedCount = _AFT.monitored_events[event].receivedCount}
 	end
 
@@ -250,6 +252,19 @@ function _AFT.assertEvtGrpReceived(eventGroup, timeout)
 		_AFT.triggerEvtCallback(event.name)
 	end
 end
+
+function _AFT.testEvtGrpReceived(testName, eventGroup, timeout, setUp, tearDown)
+	_AFT.describe(testName, function()
+		_AFT.assertEvtGrpReceived(eventGroup, timeout)
+	end, setUp, tearDown)
+end
+
+function _AFT.testEvtGrpNotReceived(testName, eventGroup, timeout, setUp, tearDown)
+	_AFT.describe(testName, function()
+		_AFT.assertEvtGrpNotReceived(eventGroup, timeout)
+	end, setUp, tearDown)
+end
+
 
 function _AFT.assertEvtNotReceived(eventName, timeout)
 	local count = _AFT.monitored_events[eventName].receivedCount
