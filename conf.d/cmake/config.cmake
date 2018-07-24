@@ -131,11 +131,6 @@ add_definitions(-DCONTROL_CONFIG_PATH="./etc:${CMAKE_INSTALL_PREFIX}/${PROJECT_N
 add_definitions(-DCTL_PLUGIN_MAGIC=1286576532)
 add_definitions(-DUSE_API_DYN=1 -DAFB_BINDING_VERSION=3 -DAFB_BINDING_WANT_DYNAPI)
 
-# (BUG!!!) as PKG_CONFIG_PATH does not work [should be an env variable]
-# ---------------------------------------------------------------------
-set(CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX}/lib64/pkgconfig ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig CACHE PATH "Prefix path")
-set(LD_LIBRARY_PATH ${CMAKE_INSTALL_PREFIX}/lib64 ${CMAKE_INSTALL_PREFIX}/lib CACHE STRING "List of directory where search for libraries")
-
 # Optional location for config.xml.in
 # -----------------------------------
 #set(WIDGET_ICON conf.d/wgt/${PROJECT_ICON} CACHE PATH "Path to the widget icon")
