@@ -315,6 +315,10 @@ local function assertVerbCallParameters(src, api, verb, args)
 	_AFT.assertIsTable(args, "Arguments must use LUA Table (event empty)")
 end
 
+function _AFT.callVerb(api, verb, args)
+	AFB:servsync(_AFT.context, api, verb, args)
+end
+
 function _AFT.assertVerb(api, verb, args, cb)
 	assertVerbCallParameters(_AFT.context, api, verb, args)
 	local err,responseJ = AFB:servsync(_AFT.context, api, verb, args)
