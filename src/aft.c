@@ -27,7 +27,10 @@
 #define CONTROL_PREFIX "aft"
 // default api to print log when apihandle not avaliable
 afb_api_t AFB_default;
-static int CtrlCreateApi(AFB_ApiT apiHandle, const char *configPath);
+
+static CtlConfigT *CtrlLoadConfigJson(AFB_ApiT apiHandle, json_object *configJ);
+static CtlConfigT *CtrlLoadConfigFile(AFB_ApiT apiHandle, const char *configPath);
+static int CtrlCreateApi(AFB_ApiT apiHandle, CtlConfigT *ctrlConfig);
 
 // Config Section definition
 static CtlSectionT ctrlSections[] = {
@@ -47,13 +50,33 @@ static void ctrlapi_ping(AFB_ReqT request) {
 }
 
 static void ctrlapi_load(AFB_ReqT request) {
-	const char *configPath = afb_req_value(request, "filepath");
+	const char *configPath = NULL;
+	json_object *reqArgs = afb_req_json(request), *configuration = NULL ;
 	afb_api_t apiHandle = afb_req_get_api(request);
 
-	if(!CtrlCreateApi(apiHandle, configPath))
-		AFB_ReqSuccess(request, NULL, NULL);
-	else
-		AFB_ReqFailF(request, "Error", "Not able to load test API with the configuration file: %s", configPath);
+	if(!json_object_object_get_ex(reqArgs, "configuration", &configuration)) {
+		AFB_ReqFailF(request, "Error", "No 'configuration' key found in request arguments: %s", json_object_get_string(reqArgs));
+		return;
+	}
+
+	switch(json_object_get_type(configuration)) {
+		case json_type_string:
+			configPath = json_object_get_string(configuration);
+			if(CtrlCreateApi(apiHandle, CtrlLoadConfigFile(apiHandle, configPath)))
+				AFB_ReqFailF(request, "Error", "Not able to load test API with the file: %s", configPath);
+			else
+				AFB_ReqSuccess(request, NULL, NULL);
+			break;
+		case json_type_object:
+			if(CtrlCreateApi(apiHandle, CtrlLoadConfigJson(apiHandle, configuration)))
+				AFB_ReqFailF(request, "Error", "Not able to load test API with the JSON: %s", json_object_get_string(configuration));
+			else
+				AFB_ReqSuccess(request, NULL, NULL);
+			break;
+		default:
+			AFB_ReqFailF(request, "Error", "the found JSON isn't valid type, it should be a string indicating a filepath to the JSON to load or an object representing the configuration. We got: %s", json_object_get_string(configuration));
+			break;
+	}
 }
 
 static void ctrlapi_exit(AFB_ReqT request) {
@@ -91,9 +114,6 @@ static int CtrlInitOneApi(AFB_ApiT apiHandle) {
 	return CtlConfigExec(apiHandle, ctrlConfig);
 }
 
-// next generation dynamic API-V3 mode
-#include <signal.h>
-
 static int CtrlLoadOneApi(void *cbdata, AFB_ApiT apiHandle) {
 	CtlConfigT *ctrlConfig = (CtlConfigT *)cbdata;
 
@@ -120,23 +140,28 @@ static int CtrlLoadOneApi(void *cbdata, AFB_ApiT apiHandle) {
 	return err;
 }
 
-static int CtrlCreateApi(AFB_ApiT apiHandle, const char *configPath) {
+static CtlConfigT *CtrlLoadConfigJson(AFB_ApiT apiHandle, json_object *configJ) {
+	return CtlLoadMetaDataJson(apiHandle, configJ, CONTROL_PREFIX);
+}
+
+static CtlConfigT *CtrlLoadConfigFile(AFB_ApiT apiHandle, const char *configPath) {
+	return CtlLoadMetaDataUsingPrefix(apiHandle, configPath, CONTROL_PREFIX);
+}
+
+static int CtrlCreateApi(AFB_ApiT apiHandle, CtlConfigT *ctrlConfig) {
 	int err = 0;
 	json_object *resourcesJ = NULL, *eventsJ = NULL;
-	CtlConfigT *ctrlConfig = NULL;
-// load config file and create API
-	ctrlConfig = CtlLoadMetaDataUsingPrefix(apiHandle, configPath, CONTROL_PREFIX);
+
 	if(!ctrlConfig) {
 		AFB_ApiError(apiHandle,
-			"CtrlBindingDyn No valid control config file in:\n-- %s",
-			configPath);
-		return ERROR;
+			"CtrlBindingDyn No valid control config file loaded.");
+			return ERROR;
 	}
 
 	if(!ctrlConfig->api) {
 		AFB_ApiError(apiHandle,
 			"CtrlBindingDyn API Missing from metadata in:\n-- %s",
-			configPath);
+			json_object_get_string(ctrlConfig->configJ));
 		return ERROR;
 	}
 
@@ -158,9 +183,10 @@ static int CtrlCreateApi(AFB_ApiT apiHandle, const char *configPath) {
 	wrap_json_object_add(ctrlConfig->configJ, resourcesJ);
 	wrap_json_object_add(ctrlConfig->configJ, eventsJ);
 
-	if(afb_api_new_api(apiHandle, ctrlConfig->api, ctrlConfig->info, 1, CtrlLoadOneApi, ctrlConfig))
-		return err;
-	return -1;
+	if(! afb_api_new_api(apiHandle, ctrlConfig->api, ctrlConfig->info, 1, CtrlLoadOneApi, ctrlConfig))
+		return ERROR;
+
+	return 0;
 }
 
 int afbBindingEntry(afb_api_t apiHandle) {
@@ -169,7 +195,7 @@ int afbBindingEntry(afb_api_t apiHandle) {
 	const char *envDirList = NULL, *configPath = NULL;
 	AFB_default = apiHandle;
 
-	AFB_ApiNotice(apiHandle, "Controller in afbBindingEntry");
+	AFB_ApiDebug(apiHandle, "Controller in afbBindingEntry");
 
 	envDirList = getEnvDirList(CONTROL_PREFIX, "CONFIG_PATH");
 
@@ -188,5 +214,5 @@ int afbBindingEntry(afb_api_t apiHandle) {
 		return ERROR;
 	}
 
-	return CtrlCreateApi(apiHandle, configPath);
+	return CtrlCreateApi(apiHandle, CtrlLoadConfigFile(apiHandle, configPath));
 }
