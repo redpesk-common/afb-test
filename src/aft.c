@@ -190,22 +190,27 @@ static int CtrlCreateApi(AFB_ApiT apiHandle, CtlConfigT *ctrlConfig) {
 }
 
 int afbBindingEntry(afb_api_t apiHandle) {
-	size_t len = 0;
+	size_t len = 0, bindingRootDirLen = 0;
 	char *dirList;
-	const char *envDirList = NULL, *configPath = NULL;
+	const char *envDirList = NULL, *configPath = NULL, *bindingRootDir = NULL;
 	AFB_default = apiHandle;
 
 	AFB_ApiDebug(apiHandle, "Controller in afbBindingEntry");
 
 	envDirList = getEnvDirList(CONTROL_PREFIX, "CONFIG_PATH");
 
+	bindingRootDir = GetBindingDirPath();
+	bindingRootDirLen = strlen(bindingRootDir);
+
 	if(envDirList) {
-		len = strlen(CONTROL_CONFIG_PATH) + strlen(envDirList);
+		len = strlen(CONTROL_CONFIG_PATH) + strlen(envDirList) + bindingRootDirLen;
 		dirList = malloc(len + 1);
-		snprintf(dirList, len + 1, "%s:%s", envDirList, CONTROL_CONFIG_PATH);
+		snprintf(dirList, len + 2, "%s:%s:%s", envDirList, bindingRootDir, CONTROL_CONFIG_PATH);
 	}
 	else {
-		dirList = CONTROL_CONFIG_PATH;
+		len = strlen(CONTROL_CONFIG_PATH) + bindingRootDirLen;
+		dirList = malloc(len + 1);
+		snprintf(dirList, len + 1, "%s:%s", bindingRootDir, CONTROL_CONFIG_PATH);
 	}
 
 	configPath = CtlConfigSearch(apiHandle, dirList, CONTROL_PREFIX);
