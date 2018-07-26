@@ -45,42 +45,44 @@ static int LoadOneMapi(void *data, AFB_ApiT apiHandle) {
 		return -1;
 	}
 
-	// Add actions to the section to be able to respond to defined events.
-	for(idx = 0; ctrlConfig->sections[idx].key != NULL; ++idx) {
-		if(! strcasecmp(ctrlConfig->sections[idx].key, "events")) {
-			savedActions = ctrlConfig->sections[idx].actions;
-			break;
+	if(mapisHandle->eventsJ) {
+		// Add actions to the section to be able to respond to defined events.
+		for(idx = 0; ctrlConfig->sections[idx].key != NULL; ++idx) {
+			if(! strcasecmp(ctrlConfig->sections[idx].key, "events")) {
+				savedActions = ctrlConfig->sections[idx].actions;
+				break;
+			}
 		}
-	}
-	newActions = ActionConfig(apiHandle, mapisHandle->eventsJ, 0);
+		newActions = ActionConfig(apiHandle, mapisHandle->eventsJ, 0);
 
-	if(savedActions) {
-		while(savedActions[savedCount].uid != NULL)
-			savedCount++;
-	}
+		if(savedActions) {
+			while(savedActions[savedCount].uid != NULL)
+				savedCount++;
+		}
 
-	while(newActions[count].uid != NULL)
-		count++;
-
-	int total = savedCount + count;
-	count = 0;
-	savedCount = 0;
-	CtlActionT * mergedActions = calloc(total + 1, sizeof(CtlActionT));
-
-	if(savedActions) {
-		while(savedActions[count].uid != NULL) {
-			mergedActions[count] = savedActions[count];
+		while(newActions[count].uid != NULL)
 			count++;
+
+		int total = savedCount + count;
+		count = 0;
+		savedCount = 0;
+		CtlActionT * mergedActions = calloc(total + 1, sizeof(CtlActionT));
+
+		if(savedActions) {
+			while(savedActions[count].uid != NULL) {
+				mergedActions[count] = savedActions[count];
+				count++;
+			}
 		}
-	}
 
-	while(newActions[savedCount].uid != NULL && count <= total) {
-		mergedActions[count] = newActions[savedCount];
-		count++;
-		savedCount++;
-	}
+		while(newActions[savedCount].uid != NULL && count <= total) {
+			mergedActions[count] = newActions[savedCount];
+			count++;
+			savedCount++;
+		}
 
-	ctrlConfig->sections[idx].actions = mergedActions;
+		ctrlConfig->sections[idx].actions = mergedActions;
+	}
 
 	// declare an event event manager for this API;
 	afb_api_on_event(apiHandle, CtrlDispatchApiEvent);
@@ -112,10 +114,8 @@ static void OneMapiConfig(void *data, json_object *mapiJ) {
 		json_object_object_del(mapiJ, "events");
 		mapisHandle->mapiJ = mapiJ;
 
-		if (afb_api_new_api(mapisHandle->mainApiHandle, uid, info, 1, LoadOneMapi, (void*)mapisHandle)) {
+		if (!afb_api_new_api(mapisHandle->mainApiHandle, uid, info, 1, LoadOneMapi, (void*)mapisHandle))
 			AFB_ApiError(mapisHandle->mainApiHandle, "Error creating new api: %s", uid);
-			return;
-		}
 	}
 }
 

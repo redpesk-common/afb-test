@@ -96,7 +96,7 @@ end
 function _AFT.registerData(dict, eventData)
 	if dict.data and type(dict.data) == 'table' then
 		if _AFT.event_history == true then
-			table.insert(dict.data, eventData, 1)
+			table.insert(dict.data, 1, eventData)
 		else
 			dict.data[1] = eventData
 		end
@@ -111,9 +111,9 @@ function _AFT.triggerEvtCallback(eventName)
 		if _AFT.monitored_events[eventName].data ~= nil then
 			local data_n = table_size(_AFT.monitored_events[eventName].data)
 			if _AFT.event_history == true then
-				_AFT.monitored_events[eventName].cb(v.name, _AFT.monitored_events[eventName].data[data_n], _AFT.monitored_events[eventName].data)
+				_AFT.monitored_events[eventName].cb(eventName, _AFT.monitored_events[eventName].data[data_n], _AFT.monitored_events[eventName].data)
 			else
-				_AFT.monitored_events[eventName].cb(v.name, _AFT.monitored_events[eventName].data[data_n])
+				_AFT.monitored_events[eventName].cb(eventName, _AFT.monitored_events[eventName].data[data_n])
 			end
 		end
 	end
@@ -132,7 +132,7 @@ function _AFT.bindingEventHandler(eventObj, uid)
 		eventListeners = eventObj.data.result
 		-- Remove from event to hold the bare event data and be able to assert it
 		eventObj.data.result = nil
-		data = eventObj.data
+		data = eventObj.data.data
 	end
 
 	if type(_AFT.monitored_events[eventName]) == 'table' then
@@ -274,7 +274,7 @@ function _AFT.assertEvtNotReceived(eventName, timeout)
 
 	_AFT.assertIsTrue(count == 0, "Event '".. eventName .."' received but it shouldn't")
 
-	_AFT.triggerEvtCallback(event.name)
+	_AFT.triggerEvtCallback(eventName)
 end
 
 function _AFT.assertEvtReceived(eventName, timeout)
@@ -285,7 +285,7 @@ function _AFT.assertEvtReceived(eventName, timeout)
 
 	_AFT.assertIsTrue(count > 0, "No event '".. eventName .."' received")
 
-	_AFT.triggerEvtCallback(event.name)
+	_AFT.triggerEvtCallback(eventName)
 end
 
 function _AFT.testEvtNotReceived(testName, eventName, timeout, setUp, tearDown)
@@ -371,8 +371,6 @@ function _AFT.testVerbError(testName, api, verb, args, cb, setUp, tearDown)
 end
 
 function _AFT.describe(testName, testFunction, setUp, tearDown)
-	if _AFT.beforeEach then local b = _AFT.beforeEach() end
-	if _AFT.afterEach then local a = _AFT.afterEach() end
 	local aTest = {}
 
 	if type(testFunction) == 'function' then
@@ -382,12 +380,12 @@ function _AFT.describe(testName, testFunction, setUp, tearDown)
 		os.exit(1)
 	end
 	function aTest:setUp()
+		if _AFT.beforeEach then _AFT.beforeEach() end
 		if type(setUp) == 'function' then setUp() end
-		if b then b() end
 	end
 	function aTest:tearDown()
-		if a then a() end
 		if type(tearDown) == 'function' then tearDown() end
+		if _AFT.afterEach then _AFT.afterEach() end
 	end
 
 	table.insert(_AFT.tests_list, {testName, aTest})
@@ -569,10 +567,10 @@ local function call_tests()
 	local failures="Failures : "..tostring(lu.LuaUnit.result.testCount-lu.LuaUnit.result.passedCount)
 
 	local evtHandle = AFB:evtmake(_AFT.context, 'results')
-	if type(evtHandle) == "userdata" then
-		AFB:subscribe(_AFT.context,evtHandle)
-		AFB:evtpush(_AFT.context,evtHandle,{info = success.." "..failures})
-	end
+	--if type(evtHandle) == "userdata" then
+	--	AFB:subscribe(_AFT.context,evtHandle)
+	--	AFB:evtpush(_AFT.context,evtHandle,{info = success.." "..failures})
+	--end
 end
 
 function _launch_test(context, args)
