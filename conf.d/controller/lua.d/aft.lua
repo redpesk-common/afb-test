@@ -151,8 +151,8 @@ function _evt_catcher_(source, action, eventObj)
 		if eventObj.type == "event" then
 			_AFT.bindingEventHandler(eventObj)
 		end
-	else
-		_AFT.bindingEventHandler(eventObj, uid)
+	--else
+	--	_AFT.bindingEventHandler(eventObj, uid)
 	end
 end
 
