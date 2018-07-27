@@ -29,5 +29,5 @@ _AFT.describe("Test_turning_on", function()
 
     _AFT.assertVerb("low-can", "get", {})
 
-    _AFT.assertEvtGrpReceived({evt1, evt2})
+    _AFT.assertEvtGrpReceived({[evt1] = 1, [evt2] = 1})
 end)

@@ -94,15 +94,16 @@ function _AFT.incrementCount(dict)
 end
 
 function _AFT.registerData(dict, eventData)
+	local dataCpy = deep_copy(eventData)
 	if dict.data and type(dict.data) == 'table' then
 		if _AFT.event_history == true then
-			table.insert(dict.data, 1, eventData)
+			table.insert(dict.data, dataCpy)
 		else
-			dict.data[1] = eventData
+			dict.data[1] = dataCpy
 		end
 	else
 		dict.data = {}
-		table.insert(dict.data, eventData)
+		table.insert(dict.data, dataCpy)
 	end
 end
 
@@ -183,18 +184,32 @@ function _AFT.lockWaitGroup(eventGroup, timeout)
 		print("Error: wrong argument given to wait a group of events. 1st argument should be a table")
 		return 0
 	end
-	local eventGroupCpy = {table.unpack(eventGroup)}
 
+	-- Copy and compute the expected as it may have already received events
+	-- you should add the expected count to the actual received counter to be
+	-- accurate.
+	local eventGroupCpy = {}
+	for event,expectedCount in pairs(eventGroup) do
+		eventGroupCpy[event] = expectedCount + _AFT.monitored_events[event].receivedCount
+	end
+
+	local total = 0
+	local matched = nil
 	while timeout > 0 do
 		timeout = AFB:lockwait(_AFT.context, timeout)
 		AFB:lockwait(_AFT.context, 0) --without it _evt_catcher_ cannot received event
 
-		for key,event in pairs(eventGroupCpy) do
-			if _AFT.monitored_events[event.name].receivedCount == event.receivedCount + 1 then
-				eventGroupCpy[key] = nil
+		for name,expectedCount in pairs(eventGroupCpy) do
+			if _AFT.monitored_events[name].receivedCount >= expectedCount then
+				total = total + _AFT.monitored_events[name].receivedCount
+				matched = name
 			end
 		end
-		if table_size(eventGroupCpy) == 0 then return 1 end
+		if matched then
+			eventGroupCpy[matched] = nil
+			matched = nil
+		end
+		if table_size(eventGroupCpy) == 0 then return total end
 	end
 	return 0
 end
@@ -205,66 +220,52 @@ end
 
 function _AFT.assertEvtGrpNotReceived(eventGroup, timeout)
 	local count = 0
+	local expected = 0
 	local eventName = ""
-	for key,event in pairs(eventGroup) do
-		eventGroup[key] = {name = event, receivedCount = _AFT.monitored_events[event].receivedCount}
-	end
 
 	if timeout then
 		count = _AFT.lockWaitGroup(eventGroup, timeout)
 	else
-		for _,v in pairs(eventGroup) do
-			count = count + v.count
+		for event in pairs(eventGroup) do
+			count = count + _AFT.monitored_events[event].receivedCount
 		end
 	end
 
-	for _,event in pairs(eventGroup) do
-		eventName = eventName .. " " .. event.name
+	for event,expectedCount in pairs(eventGroup) do
+		eventName = eventName .. " " .. event
+		expected = expected + expectedCount
 	end
-	_AFT.assertIsTrue(count == 0, "One of the following events has been received: '".. eventName .."' but it shouldn't")
+	_AFT.assertIsTrue(count <= expected, "One of the following events has been received: '".. eventName .."' but it shouldn't")
 
-	for _,event in pairs(eventGroup) do
-		_AFT.triggerEvtCallback(event.name)
+	for event in pairs(eventGroup) do
+		_AFT.triggerEvtCallback(event)
 	end
 end
 
 function _AFT.assertEvtGrpReceived(eventGroup, timeout)
 	local count = 0
+	local expected = 0
 	local eventName = ""
-	for key,event in pairs(eventGroup) do
-		eventGroup[key] = {name = event, receivedCount = _AFT.monitored_events[event].receivedCount}
-	end
 
 	if timeout then
 		count = _AFT.lockWaitGroup(eventGroup, timeout)
 	else
-		for _,v in pairs(eventGroup) do
-			count = count + v.receivedCount
+		for event in pairs(eventGroup) do
+			count = count + _AFT.monitored_events[event].receivedCount
 		end
 	end
 
-	for _,event in pairs(eventGroup) do
-		eventName = eventName .. " " .. event.name
+	for event,expectedCount in pairs(eventGroup) do
+		eventName = eventName .. " " .. event
+		expected = expected + expectedCount
 	end
-	_AFT.assertIsTrue(count >= table_size(eventGroup), "None or one of the following events: '".. eventName .."' has not been received")
 
-	for _,event in pairs(eventGroup) do
-		_AFT.triggerEvtCallback(event.name)
+	_AFT.assertIsTrue(count >= expected, "None or one of the following events: '".. eventName .."' has not been received")
+
+	for event in pairs(eventGroup) do
+		_AFT.triggerEvtCallback(event)
 	end
 end
-
-function _AFT.testEvtGrpReceived(testName, eventGroup, timeout, setUp, tearDown)
-	_AFT.describe(testName, function()
-		_AFT.assertEvtGrpReceived(eventGroup, timeout)
-	end, setUp, tearDown)
-end
-
-function _AFT.testEvtGrpNotReceived(testName, eventGroup, timeout, setUp, tearDown)
-	_AFT.describe(testName, function()
-		_AFT.assertEvtGrpNotReceived(eventGroup, timeout)
-	end, setUp, tearDown)
-end
-
 
 function _AFT.assertEvtNotReceived(eventName, timeout)
 	local count = _AFT.monitored_events[eventName].receivedCount
@@ -302,6 +303,18 @@ function _AFT.testEvtReceived(testName, eventName, timeout, setUp, tearDown)
 		_AFT.assertEvtReceived(eventName, timeout)
 		if _AFT.afterEach then _AFT.afterEach() end
 	end})
+end
+
+function _AFT.testEvtGrpReceived(testName, eventGroup, timeout, setUp, tearDown)
+	_AFT.describe(testName, function()
+		_AFT.assertEvtGrpReceived(eventGroup, timeout)
+	end, setUp, tearDown)
+end
+
+function _AFT.testEvtGrpNotReceived(testName, eventGroup, timeout, setUp, tearDown)
+	_AFT.describe(testName, function()
+		_AFT.assertEvtGrpNotReceived(eventGroup, timeout)
+	end, setUp, tearDown)
 end
 
 --[[
@@ -580,11 +593,11 @@ function _launch_test(context, args)
 	-- lua test files to execute in the Framework.
 	AFB:servsync(_AFT.context, "monitor", "set", { verbosity = "debug" })
 	if type(args.trace) == "string" then
-		AFB:servsync(_AFT.context, "monitor", "trace", { add = { api = args.trace, request = "vverbose", event = "push_after" }})
+		AFB:servsync(_AFT.context, "monitor", "trace", { add = { request = "vverbose", event = "push_after", pattern = args.trace.."/*" }})
 	elseif type(args.trace) == "table" then
 		for _,v in pairs(args.trace) do
 			if type(v) == "string" then
-				AFB:servsync(_AFT.context, "monitor", "trace", { add = { api = v, request = "vverbose", event = "push_after" }})
+				AFB:servsync(_AFT.context, "monitor", "trace", { add = { request = "vverbose", event = "push_after", pattern = v.."/*" }})
 			end
 		end
 	end
