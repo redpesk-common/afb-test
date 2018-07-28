@@ -22,14 +22,6 @@ local lu = require('luaunit')
 lu.LuaUnit:setOutputType('JUNIT')
 lu.LuaUnit.fname = "xUnitResults.xml"
 
-local function table_size(t)
-	local size = 0
-	for _,_ in pairs(t) do
-		size = size + 1
-	end
-	return size
-end
-
 _AFT = {
 	exit = {0, code},
 	context = _ctx,
