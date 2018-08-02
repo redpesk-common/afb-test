@@ -12,11 +12,15 @@
 		<param name="urn:AGL:permission::public:no-htdocs" value="required" />
 	</feature>
 
+	<feature name="urn:AGL:widget:provided-binding">
+		<param name="aft" value="@WIDGET_ENTRY_POINT@" />
+	</feature>
+
 	<feature name="urn:AGL:widget:provided-api">
 		<param name="afTest" value="ws" />
 	</feature>
 
-	<feature name="urn:AGL:widget:required-api">
-		<param name="lib/aft.so" value="local" />
+	<feature name="urn:AGL:widget:required-binding">
+		<param name="@WIDGET_ENTRY_POINT@" value="local" />
 	</feature>
 </widget>
