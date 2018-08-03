@@ -19,7 +19,6 @@
 # Project Info
 # ------------------
 set(PROJECT_NAME afTest)
-set(PROJECT_VERSION "6.0")
 set(PROJECT_PRETTY_NAME "Application Framework Test")
 set(PROJECT_DESCRIPTION "Binding used to test other binding")
 set(PROJECT_URL "https://github.com/iotbzh/afb-test")
@@ -27,7 +26,7 @@ set(PROJECT_ICON "icon.png")
 set(PROJECT_AUTHOR "Forlot Romain")
 set(PROJECT_AUTHOR_MAIL "romain.forlot@iot.bzh")
 set(PROJECT_LICENSE "APL2.0")
-set(PROJECT_LANGUAGES "CXX")
+set(PROJECT_LANGUAGES "C")
 
 # Where are stored default templates files from submodule or subtree app-templates in your project tree
 # relative to the root project directory
@@ -126,6 +125,7 @@ list(APPEND link_libraries afb-helpers)
 # CACHE STRING "Compilation flags for RELEASE build type.")
 
 set(CONTROL_SUPPORT_LUA 1)
+add_definitions(-DLUA_GLOB_PATTERN="/var/?.lua\\\;")
 add_definitions(-DCONTROL_PLUGIN_PATH="./var:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/lib/plugins:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/var:${INSTALL_PREFIX}/${PROJECT_NAME}/lib/plugins:${INSTALL_PREFIX}/${PROJECT_NAME}/var:${CMAKE_BINARY_DIR}/package/lib/plugins:${CMAKE_BINARY_DIR}/package/var")
 add_definitions(-DCONTROL_CONFIG_PATH="./etc:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/etc:${INSTALL_PREFIX}/${PROJECT_NAME}/etc:${CMAKE_BINARY_DIR}/package/etc")
 add_definitions(-DCTL_PLUGIN_MAGIC=1286576532)
