@@ -580,7 +580,7 @@ end
 
 function _launch_test(context, args)
 	_AFT.context = context
-	local bindingRootDir = AFB:getrootdir()
+	local bindingRootDir = AFB:getrootdir(_AFT.context)
 	local loadedfile = nil
 
 	-- Prepare the tests execution configuring the monitoring and loading
@@ -598,12 +598,14 @@ function _launch_test(context, args)
 
 	if args.files and type(args.files) == 'table' then
 		for _,f in pairs(args.files) do
-			local cmdHandle = io.popen('find '..bindingRootDir..'-name '..f)
+			local cmdHandle = io.popen('find '..bindingRootDir..' -name '..f)
 			loadedfile = dofile(cmdHandle:read())
+			cmdHandle:close()
 		end
 	elseif type(args.files) == 'string' then
-		local cmdHandle = io.popen('find '..bindingRootDir..'-name '..args.files)
+		local cmdHandle = io.popen('find '..bindingRootDir..' -name '..args.files)
 		loadedfile = dofile(cmdHandle:read())
+		cmdHandle:close()
 	end
 
 	-- Execute the test within a context if given. We assume that the before
