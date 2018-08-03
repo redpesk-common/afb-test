@@ -580,6 +580,8 @@ end
 
 function _launch_test(context, args)
 	_AFT.context = context
+	local bindingRootDir = AFB:getrootdir()
+	local loadedfile = nil
 
 	-- Prepare the tests execution configuring the monitoring and loading
 	-- lua test files to execute in the Framework.
@@ -593,12 +595,15 @@ function _launch_test(context, args)
 			end
 		end
 	end
+
 	if args.files and type(args.files) == 'table' then
 		for _,f in pairs(args.files) do
-			dofile('var/'..f)
+			local cmdHandle = io.popen('find '..bindingRootDir..'-name '..f)
+			loadedfile = dofile(cmdHandle:read())
 		end
 	elseif type(args.files) == 'string' then
-		dofile('var/'..args.files)
+		local cmdHandle = io.popen('find '..bindingRootDir..'-name '..args.files)
+		loadedfile = dofile(cmdHandle:read())
 	end
 
 	-- Execute the test within a context if given. We assume that the before
