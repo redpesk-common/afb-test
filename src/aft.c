@@ -191,11 +191,26 @@ static int CtrlCreateApi(AFB_ApiT apiHandle, CtlConfigT *ctrlConfig) {
 
 int afbBindingEntry(afb_api_t apiHandle) {
 	size_t len = 0, bindingRootDirLen = 0;
-	char *dirList;
+	char *dirList, *afTestRootDir, *path;
 	const char *envDirList = NULL, *configPath = NULL, *bindingRootDir = NULL;
+	json_object *settings = afb_api_settings(apiHandle), *bpath = NULL;
 	AFB_default = apiHandle;
 
 	AFB_ApiDebug(apiHandle, "Controller in afbBindingEntry");
+
+	if(json_object_object_get_ex(settings, "binding-path", &bpath)) {
+		afTestRootDir = strdup(json_object_get_string(bpath));
+		path = rindex(afTestRootDir, '/');
+		if(strlen(path) < 3)
+			return ERROR;
+		*++path = '.';
+		*++path = '.';
+		*++path = '\0';
+	}
+	else {
+		afTestRootDir = malloc(1);
+		strcpy(afTestRootDir, "");
+	}
 
 	envDirList = getEnvDirList(CONTROL_PREFIX, "CONFIG_PATH");
 
@@ -203,14 +218,14 @@ int afbBindingEntry(afb_api_t apiHandle) {
 	bindingRootDirLen = strlen(bindingRootDir);
 
 	if(envDirList) {
-		len = strlen(CONTROL_CONFIG_PATH) + strlen(envDirList) + bindingRootDirLen + 2;
+		len = strlen(CONTROL_CONFIG_PATH) + strlen(envDirList) + bindingRootDirLen + 3;
 		dirList = malloc(len + 1);
-		snprintf(dirList, len +1, "%s:%s:%s", envDirList, bindingRootDir, CONTROL_CONFIG_PATH);
+		snprintf(dirList, len +1, "%s:%s:%s:%s", envDirList, afTestRootDir, bindingRootDir, CONTROL_CONFIG_PATH);
 	}
 	else {
-		len = strlen(CONTROL_CONFIG_PATH) + bindingRootDirLen + 1;
+		len = strlen(CONTROL_CONFIG_PATH) + bindingRootDirLen + 2;
 		dirList = malloc(len + 1);
-		snprintf(dirList, len + 1, "%s:%s", bindingRootDir, CONTROL_CONFIG_PATH);
+		snprintf(dirList, len + 1, "%s:%s:%s", bindingRootDir, afTestRootDir, CONTROL_CONFIG_PATH);
 	}
 
 	configPath = CtlConfigSearch(apiHandle, dirList, CONTROL_PREFIX);
@@ -219,5 +234,6 @@ int afbBindingEntry(afb_api_t apiHandle) {
 		return ERROR;
 	}
 
+	free(afTestRootDir);
 	return CtrlCreateApi(apiHandle, CtrlLoadConfigFile(apiHandle, configPath));
 }
