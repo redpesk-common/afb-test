@@ -89,14 +89,12 @@
     received, you have to register the event with the test framework using
     **_AFT.addEventToMonitor** function.
 
+    The table has to have this format:
+    ```lua
+    eventGrp = {["api/event_name_1"]=1,["api/event_name_2"]=2,["api/event_name_3"]=5}
+    ```
+    As you can see, in the table, event names are table keys and the value stored are
+    the number of time that the events have to be received.
+
     Check if events has been correctly received in time (timeout in µs). An
-    event name use the application framework naming scheme: **api/event_name**.
-
-* **_AFT.testGrpEvtNotReceived(testName, eventGrp, timeout, setUp, tearDown)**
-
-    Prior to be able to check that a group of event (a table of event) has not
-    been received, you have to register the event with the test framework using
-    **_AFT.addEventToMonitor** function.
-
-    Check if event has not been correctly received in time (timeout in µs). An
     event name use the application framework naming scheme: **api/event_name**.

@@ -3,7 +3,7 @@
 To launch your tests, enter this command.
 
 ```bash
-afb-daemon --name afbd-test --port=1234 --workdir=package --ldpaths=/opt/AGL/lib64/afb:lib --token= -vvv --tracereq=common
+afb-daemon --name aft-aftest --port=1234 --workdir=package --ldpaths=/opt/AGL/lib64/afb:lib --token= -vvv --tracereq=common
 ```
 
 On afb-daemon startup you should have all the app-framework config displayed:
