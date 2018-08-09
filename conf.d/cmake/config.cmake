@@ -129,7 +129,7 @@ add_definitions(-DLUA_GLOB_PATTERN="/var/?.lua\\\;")
 add_definitions(-DCONTROL_PLUGIN_PATH="./var:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/lib/plugins:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/var:${INSTALL_PREFIX}/${PROJECT_NAME}/lib/plugins:${INSTALL_PREFIX}/${PROJECT_NAME}/var:${CMAKE_BINARY_DIR}/package/lib/plugins:${CMAKE_BINARY_DIR}/package/var")
 add_definitions(-DCONTROL_CONFIG_PATH="./etc:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/etc:${INSTALL_PREFIX}/${PROJECT_NAME}/etc:${CMAKE_BINARY_DIR}/package/etc")
 add_definitions(-DCTL_PLUGIN_MAGIC=1286576532)
-add_definitions(-DUSE_API_DYN=1 -DAFB_BINDING_VERSION=3 -DAFB_BINDING_WANT_DYNAPI)
+add_definitions(-DAFB_BINDING_VERSION=3)
 
 # Optional location for config.xml.in
 # -----------------------------------
