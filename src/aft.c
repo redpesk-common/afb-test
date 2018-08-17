@@ -230,7 +230,7 @@ int afbBindingEntry(afb_api_t apiHandle) {
 
 	configPath = CtlConfigSearch(apiHandle, dirList, CONTROL_PREFIX);
 	if(!configPath) {
-		AFB_ApiError(apiHandle, "CtlPreInit: No %s* config found in %s ", GetBinderName(), dirList);
+		AFB_ApiError(apiHandle, "CtlPreInit: No %s-%s* config found in %s ", CONTROL_PREFIX, GetBinderName(), dirList);
 		return ERROR;
 	}
 
