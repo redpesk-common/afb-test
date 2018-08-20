@@ -25,6 +25,7 @@ lu.LuaUnit.fname = "xUnitResults.xml"
 _AFT = {
 	exit = {0, code},
 	context = _ctx,
+	bindingRootDir = nil,
 	tests_list = {},
 	event_history = false,
 	monitored_events = {},
@@ -580,7 +581,7 @@ end
 
 function _launch_test(context, args)
 	_AFT.context = context
-	local bindingRootDir = AFB:getrootdir(_AFT.context)
+	_AFT.bindingRootDir = AFB:getrootdir(_AFT.context)
 	local loadedfile = nil
 
 	-- Prepare the tests execution configuring the monitoring and loading
@@ -598,12 +599,12 @@ function _launch_test(context, args)
 
 	if args.files and type(args.files) == 'table' then
 		for _,f in pairs(args.files) do
-			local cmdHandle = io.popen('find '..bindingRootDir..' -name '..f)
+			local cmdHandle = io.popen('find '.. _AFT.bindingRootDir..' -name '..f)
 			loadedfile = dofile(cmdHandle:read())
 			cmdHandle:close()
 		end
 	elseif type(args.files) == 'string' then
-		local cmdHandle = io.popen('find '..bindingRootDir..' -name '..args.files)
+		local cmdHandle = io.popen('find '.._AFT.bindingRootDir..' -name '..args.files)
 		loadedfile = dofile(cmdHandle:read())
 		cmdHandle:close()
 	end
