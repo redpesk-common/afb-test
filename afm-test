@@ -18,6 +18,14 @@
 # limitations under the License.
 ###########################################################################
 
+trap cleanup SIGTERM SIGINT SIGABRT SIGHUP
+
+function cleanup() {
+	afm-util kill $pid >&2
+	afm-util remove $APP >&2
+	exit 1
+}
+
  function usage() {
 cat >&2 << EOF
 Usage: $0 <path>
@@ -26,11 +34,11 @@ EOF
 }
 
 function error() {
-	echo "ERR: $@" >&2
-	exit 1
+	echo "FAIL: $@" >&2
+	cleanup
 }
 function info() {
-	echo "INF: $@" >&2
+	echo "PASS: $@" >&2
 }
 
 # check application name passed as first arg
@@ -41,23 +49,27 @@ WGT=$1
 INSTALL=$(afm-util install $WGT)
 APP=$(echo $INSTALL | jq -r .added)
 [[ "$APP" == "null" ]] && error "Widget contains error. Abort"
+APP_HOME=${HOME}/app-data/$(echo ${APP} |cut -d'@' -f1)
 
 # ask appfw to start application
 pid=$(afm-util start $APP)
 [[ -z "$pid" || ! -e "/proc/$pid" ]] && error "Failed to start application $APP"
 info "$APP started with pid=$pid"
 
-ps -ef | grep -v grep | grep -q $pid
+kill -0 $pid
 RUNNING=$?
 while [[ $RUNNING -eq 0 ]]
 do
-	ps -ef | grep -v grep | grep -q $pid
+	kill -0 $pid
 	RUNNING=$?
+	sleep 0.2
 done
 
 # Terminate the App
 afm-util kill $pid >&2
 afm-util remove $APP >&2
 
-info "$APP killed and removed"
+# Little sed script making compliant the output of test results for ptest.
+sed -r -e '/^# (S| +)/d' -e '1d' -e 's:^ok +([0-9]+)\t+(.*):PASS\: \1 \2:' -e 's:^not ok +([0-9]+)\t+(.*):FAIL\: \1 \2:' ${APP_HOME}/test_results.log
 
+info "$APP killed and removed"
