@@ -46,6 +46,7 @@ end
 function _AFT.setOutputFile(filePath)
 	local file = assert(io.open(filePath, "w+"))
 	io.output(file)
+	io.stdout = file
 end
 
 function _AFT.exitAtEnd(code)
