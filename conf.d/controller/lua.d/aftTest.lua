@@ -103,5 +103,5 @@ _AFT.describe("testAssertVerbStatusSuccess",function() _AFT.assertVerbStatusSucc
 _AFT.describe("testAssertVerbResponseEquals",function() _AFT.assertVerbResponseEquals('hello', 'ping', {},"Some String") end)
 _AFT.describe("testAssertVerbCb",function() _AFT.assertVerbCb('hello', 'ping', {},_callback) end)
 _AFT.describe("testAssertVerbStatusError",function() _AFT.assertVerbStatusError('hello', 'pingfail', {}) end)
-_AFT.describe("testAssertVerbResponseEqualsError",function() _AFT.assertVerbResponseEqualsError('hello', 'pingfail', {},"Ping Binder Daemon fails") end)
+_AFT.describe("testAssertVerbResponseEqualsError",function() _AFT.assertVerbResponseEqualsError('hello', 'nonexistentverb', {},"Ping Binder Daemon fails") end)
 _AFT.describe("testAssertVerbCbError",function() _AFT.assertVerbCbError('hello', 'pingfail', {},_callbackError) end)

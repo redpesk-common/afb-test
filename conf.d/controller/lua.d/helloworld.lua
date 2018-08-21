@@ -26,7 +26,7 @@ function _callbackError(responseJ)
   _AFT.assertStrContains(responseJ.request.info, "Ping Binder Daemon fails")
 end
 function _callbackEvent(eventName, eventData)
-  _AFT.assertEquals(eventData, {data = { key = 'weird others data', another_key = 123.456 }})
+  _AFT.assertEquals(eventData, { key = 'weird others data', another_key = 123.456 })
 end
 
 _AFT.addEventToMonitor("hello/anEvent")
@@ -37,12 +37,10 @@ _AFT.setBefore("testPingSuccess",function() print("~~~~~ Begin testPingSuccess ~
 _AFT.setAfter("testPingSuccess",function() print("~~~~~ End testPingSuccess ~~~~~") end)
 
 _AFT.testVerbResponseEquals('testPingSuccessAndResponse','hello', 'ping', {}, "Some String")
-_AFT.testVerbResponseEquals('testPingSuccessResponseFail','hello', 'ping', {}, "Unexpected String")
 _AFT.testVerbCb('testPingSuccessCallback','hello', 'ping', {}, _callback)
 
 _AFT.testVerbStatusError('testPingError', 'hello', 'pingfail', {})
-_AFT.testVerbResponseEqualsError('testPingErrorAndResponse', 'hello', 'pingfail', {}, "Ping Binder Daemon fails")
-_AFT.testVerbResponseEqualsError('testPingErrorResponseFail', 'hello', 'pingfail', {}, "Ping Binder Daemon succeed")
+_AFT.testVerbResponseEqualsError('testPingErrorAndResponse', 'hello', 'pingfail', {}, "Ping Binder Daemon succeeds")
 _AFT.testVerbCbError('testPingErrorCallback', 'hello', 'pingfail', {}, _callbackError)
 
 _AFT.testVerbStatusSuccess('testEventAddanEvent', 'hello', 'eventadd', {tag = 'event', name = 'anEvent'})
@@ -55,9 +53,7 @@ _AFT.testVerbStatusSuccess('testEventPushanotherEvent', 'hello', 'eventpush', {t
 
 _AFT.testVerbStatusSuccess('testGenerateWarning', 'hello', 'verbose', {level = 4, message = 'My Warning message!'})
 
-_AFT.testEvtGrpReceived("testEventGroupReceived",{["hello/anEvent"]=1,["hello/anotherEvent"]=1},300000)
-_AFT.testEvtGrpReceived("testEventGroupReceived",{["hello/anEvent"]=2,["hello/anotherEvent"]=1},300000)
-_AFT.testEvtGrpReceived("testEventGroupReceived",{["hello/anEvent"]=0,["hello/anotherEvent"]=0},300000)
+_AFT.testEvtGrpReceived("testEventGroupReceived",{["hello/anEvent"]=1,["hello/anotherEvent"]=1})
 
-_AFT.testEvtReceived("testanEventReceived", "hello/anEvent",300000)
-_AFT.testEvtReceived("testanotherEventReceived", "hello/anotherEvent",300000)
+_AFT.testEvtReceived("testanEventReceived", "hello/anEvent")
+_AFT.testEvtReceived("testanotherEventReceived", "hello/anotherEvent")
