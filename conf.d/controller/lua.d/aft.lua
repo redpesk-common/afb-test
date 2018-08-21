@@ -19,7 +19,7 @@
 --]]
 
 local lu = require('luaunit')
-lu.LuaUnit:setOutputType('JUNIT')
+lu.LuaUnit:setOutputType('TAP')
 lu.LuaUnit.fname = "xUnitResults.xml"
 
 _AFT = {
