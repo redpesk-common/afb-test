@@ -212,30 +212,6 @@ end
   Assert and test functions about the event part.
 ]]
 
-function _AFT.assertEvtGrpNotReceived(eventGroup, timeout)
-	local count = 0
-	local expected = 0
-	local eventName = ""
-
-	if timeout then
-		count = _AFT.lockWaitGroup(eventGroup, timeout)
-	else
-		for event in pairs(eventGroup) do
-			count = count + _AFT.monitored_events[event].receivedCount
-		end
-	end
-
-	for event,expectedCount in pairs(eventGroup) do
-		eventName = eventName .. " " .. event
-		expected = expected + expectedCount
-	end
-	_AFT.assertIsTrue(count <= expected, "One of the following events has been received: '".. eventName .."' but it shouldn't")
-
-	for event in pairs(eventGroup) do
-		_AFT.triggerEvtCallback(event)
-	end
-end
-
 function _AFT.assertEvtGrpReceived(eventGroup, timeout)
 	local count = 0
 	local expected = 0
@@ -259,17 +235,6 @@ function _AFT.assertEvtGrpReceived(eventGroup, timeout)
 	for event in pairs(eventGroup) do
 		_AFT.triggerEvtCallback(event)
 	end
-end
-
-function _AFT.assertEvtNotReceived(eventName, timeout)
-	local count = _AFT.monitored_events[eventName].receivedCount
-	if timeout then
-		count = _AFT.lockWait(eventName, timeout)
-	end
-
-	_AFT.assertIsTrue(count == 0, "Event '".. eventName .."' received but it shouldn't")
-
-	_AFT.triggerEvtCallback(eventName)
 end
 
 function _AFT.assertEvtReceived(eventName, timeout)
