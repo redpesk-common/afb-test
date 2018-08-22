@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2015, 2016, 2017 IoT.bzh
+# Copyright 2015 - 2018 IoT.bzh
 #
 # author: Romain Forlot <romain.forlot@iot.bzh>
 #
@@ -16,11 +16,16 @@
 # limitations under the License.
 ###########################################################################
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
 
-include(CTest)
-enable_testing()
+##################################################
+# Low-CAN Lua Scripts
+##################################################
+PROJECT_TARGET_ADD(test-files)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/conf.d/cmake/config.cmake)
+	file(GLOB LUA_FILES "*.lua")
+	add_input_files("${LUA_FILES}")
 
-INSTALL(PROGRAMS afm-test DESTINATION ${CMAKE_INSTALL_BINDIR})
+	SET_TARGET_PROPERTIES(${TARGET_NAME} PROPERTIES
+	LABELS "TEST-DATA"
+	OUTPUT_NAME ${TARGET_NAME}
+	)

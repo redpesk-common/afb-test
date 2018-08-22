@@ -27,6 +27,7 @@ set(PROJECT_AUTHOR "Forlot Romain")
 set(PROJECT_AUTHOR_MAIL "romain.forlot@iot.bzh")
 set(PROJECT_LICENSE "APL2.0")
 set(PROJECT_LANGUAGES "C")
+set(API_NAME "afTest")
 
 # Where are stored default templates files from submodule or subtree app-templates in your project tree
 # relative to the root project directory
@@ -188,7 +189,7 @@ set(AFB_REMPORT "1234" CACHE PATH "Default binder listening port")
 
 # Print a helper message when every thing is finished
 # ----------------------------------------------------
-set(CLOSING_MESSAGE "Typical binding launch: afb-daemon --name ${PROJECT_NAME} --port=${AFB_REMPORT} --workdir=package --ldpaths=/opt/AGL/lib64/afb:lib --token=\"${AFB_TOKEN}\"")
+set(CLOSING_MESSAGE "Typical binding launch: afb-daemon --name ${PROJECT_NAME} --port=${AFB_REMPORT} --workdir=package-test --ldpaths=/opt/AGL/lib64/afb:../package/lib --token=\"${AFB_TOKEN}\"")
 set(PACKAGE_MESSAGE "Install widget file using in the target : afm-util install ${PROJECT_NAME}.wgt")
 
 # Optional schema validator about now only XML, LUA and JSON

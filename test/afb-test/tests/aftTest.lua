@@ -96,12 +96,14 @@ _AFT.describe("testAssertNotIsFunction", function()	_AFT.assertNotIsFunction(2) 
 _AFT.describe("testAssertNotIsThread", function()	_AFT.assertNotIsThread(2) end)
 _AFT.describe("testAssertNotIsUserdata", function()	_AFT.assertNotIsUserdata(2) end)
 
-function _callback(responseJ) _AFT.assertStrContains(responseJ.response, "Some String") end
-function _callbackError(responseJ) _AFT.assertStrContains(responseJ.request.info, "Ping Binder Daemon fails") end
+function _callback(responseJ) _AFT.assertNotIsNil(responseJ) end
+function _callbackError(responseJ) _AFT.assertStrContains(responseJ.request.info, "verb pingfail unknown within api afTest") end
 
-_AFT.describe("testAssertVerbStatusSuccess",function() _AFT.assertVerbStatusSuccess('hello', 'ping', {}) end)
-_AFT.describe("testAssertVerbResponseEquals",function() _AFT.assertVerbResponseEquals('hello', 'ping', {},"Some String") end)
-_AFT.describe("testAssertVerbCb",function() _AFT.assertVerbCb('hello', 'ping', {},_callback) end)
-_AFT.describe("testAssertVerbStatusError",function() _AFT.assertVerbStatusError('hello', 'pingfail', {}) end)
-_AFT.describe("testAssertVerbResponseEqualsError",function() _AFT.assertVerbResponseEqualsError('hello', 'nonexistentverb', {},"Ping Binder Daemon fails") end)
-_AFT.describe("testAssertVerbCbError",function() _AFT.assertVerbCbError('hello', 'pingfail', {},_callbackError) end)
+_AFT.describe("testAssertVerbStatusSuccess",function() _AFT.assertVerbStatusSuccess('afTest', 'ping', {}) end)
+_AFT.describe("testAssertVerbResponseEquals",function() _AFT.assertVerbResponseEquals('afTest', 'ping', {}) end)
+_AFT.describe("testAssertVerbCb",function() _AFT.assertVerbCb('afTest', 'ping', {},_callback) end)
+_AFT.describe("testAssertVerbStatusError",function() _AFT.assertVerbStatusError('afTest', 'pingfail', {}) end)
+_AFT.describe("testAssertVerbResponseEqualsError",function() _AFT.assertVerbResponseEqualsError('afTest', 'nonexistentverb', {},"Ping Binder Daemon fails") end)
+_AFT.describe("testAssertVerbCbError",function() _AFT.assertVerbCbError('afTest', 'pingfail', {},_callbackError) end)
+
+_AFT.exitAtEnd()

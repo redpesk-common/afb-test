@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright 2015, 2016, 2017 IoT.bzh
+# Copyright 2015 - 2018 IoT.bzh
 #
 # author: Romain Forlot <romain.forlot@iot.bzh>
 #
@@ -16,11 +16,7 @@
 # limitations under the License.
 ###########################################################################
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
 
-include(CTest)
-enable_testing()
-
-include(${CMAKE_CURRENT_SOURCE_DIR}/conf.d/cmake/config.cmake)
-
-INSTALL(PROGRAMS afm-test DESTINATION ${CMAKE_INSTALL_BINDIR})
+# Include any directory not starting with _
+# -----------------------------------------------------
+PROJECT_SUBDIRS_ADD(${PROJECT_SRC_DIR_PATTERN})
