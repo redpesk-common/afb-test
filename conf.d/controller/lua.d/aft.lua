@@ -545,10 +545,20 @@ local function call_tests()
 	--end
 end
 
+local function readOneFile(f)
+	local cmdHandle = io.popen('find "'.. _AFT.bindingRootDir..'" -name "'..f..'"')
+	local filehandle = cmdHandle:read()
+	if filehandle then
+		dofile(filehandle)
+	else
+		print('Error: file not found ', f)
+	end
+	cmdHandle:close()
+end
+
 function _launch_test(context, args)
 	_AFT.context = context
 	_AFT.bindingRootDir = AFB:getrootdir(_AFT.context)
-	local loadedfile = nil
 
 	-- Prepare the tests execution configuring the monitoring and loading
 	-- lua test files to execute in the Framework.
@@ -565,14 +575,10 @@ function _launch_test(context, args)
 
 	if args.files and type(args.files) == 'table' then
 		for _,f in pairs(args.files) do
-			local cmdHandle = io.popen('find '.. _AFT.bindingRootDir..' -name '..f)
-			loadedfile = dofile(cmdHandle:read())
-			cmdHandle:close()
+			readOneFile(f)
 		end
 	elseif type(args.files) == 'string' then
-		local cmdHandle = io.popen('find '.._AFT.bindingRootDir..' -name '..args.files)
-		loadedfile = dofile(cmdHandle:read())
-		cmdHandle:close()
+		readOneFile(args.files)
 	end
 
 	-- Execute the test within a context if given. We assume that the before
