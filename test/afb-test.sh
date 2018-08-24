@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 trap cleanup SIGINT SIGTERM SIGABRT SIGHUP
 
@@ -29,8 +29,8 @@ ${BINDER} --name="${PROCNAME}" \
 --workdir="${BUILDDIR}/package-test" \
 --binding="$AFBTEST" \
 -vvv \
---call="afTest/launch_all_tests:{}" \
---call="afTest/exit:{}" > ${LOGPIPE} 2>&1 &
+--call="aft-aftest/launch_all_tests:{}" \
+--call="aft-aftest/exit:{}" > ${LOGPIPE} 2>&1 &
 
 while read -r line
 do
@@ -38,3 +38,5 @@ do
 done < ${LOGPIPE}
 
 rm -f ${LOGPIPE}
+
+find ${BUILDDIR} -name test_results.log -exec cat {} \;
