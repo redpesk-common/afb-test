@@ -1,9 +1,3 @@
 # Binding tester
 
-You'll find the full documentation by entering
-
-```bash
-./gendocs.sh pdf
-```
-
-or in the /docs folder.
+You'll find the doc [here](http://docs.automotivelinux.org/docs/apis_services/en/dev/reference/afb-test/Installation.html)
