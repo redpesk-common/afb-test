@@ -1,25 +1,33 @@
 #!/bin/sh
 
-trap cleanup SIGINT SIGTERM SIGABRT SIGHUP
+trap "cleanup 1" SIGINT SIGTERM SIGABRT SIGHUP
+trap "cleanup 0" EXIT
 
 cleanup() {
-	rm -f $LOGPIPE
+	trap '' SIGINT SIGTERM SIGABRT SIGHUP EXIT
+	kill $AFTESTPID
+	rm -f $AFTESTSOCKET
 	pkill $PROCNAME
-	exit 1
+	exit $1
 }
 
 BINDER=$(command -v afb-daemon)
-AFBTEST="$(pkg-config --variable libdir afb-test)/aft.so"
 PROCNAME="aft-aftest"
 PORT=1234
 TOKEN=
-LOGPIPE="test.pipe"
+AFTESTSOCKET=/tmp/afTest
 
 [ "$1" ] && BUILDDIR="$1" || exit 1
 
-[ ! -p $LOGPIPE ] && mkfifo $LOGPIPE
-
 pkill $PROCNAME
+
+${BINDER} --name=afbd-aftest \
+--workdir="${BUILDDIR}/package" \
+--binding=lib/aft.so \
+--ws-server=unix:${AFTESTSOCKET} > /dev/null 2>&1 &
+AFTESTPID=$!
+
+sleep 0.3
 
 ${BINDER} --name="${PROCNAME}" \
 --port="${PORT}" \
@@ -27,16 +35,9 @@ ${BINDER} --name="${PROCNAME}" \
 --tracereq=common \
 --token=${TOKEN} \
 --workdir="${BUILDDIR}/package-test" \
---binding="$AFBTEST" \
--vvv \
+--binding="${BUILDDIR}/package/lib/aft.so" \
+--ws-client=unix:${AFTESTSOCKET} \
 --call="aft-aftest/launch_all_tests:{}" \
---call="aft-aftest/exit:{}" > ${LOGPIPE} 2>&1 &
+--call="aft-aftest/exit:{}"
 
-while read -r line
-do
-	[ "$(echo "${line}" | grep 'NOTICE: Browser URL=')" ] && break
-done < ${LOGPIPE}
-
-rm -f ${LOGPIPE}
-
-find ${BUILDDIR} -name test_results.log -exec cat {} \;
+find "${BUILDDIR}" -name test_results.log -exec cat {} \;
