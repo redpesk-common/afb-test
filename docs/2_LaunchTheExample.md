@@ -1,9 +1,12 @@
 # Launch The Example
 
+## From a terminal (on your build host)
+
 To launch your tests, enter this command.
 
 ```bash
-afb-daemon --name aft-aftest --port=1234 --workdir=package --ldpaths=/opt/AGL/lib64/afb:lib --token= -vvv --tracereq=common
+export BUILD_DIR_PATH = "$(pwd)/build"
+./afb-test.sh <BUILD_DIR_PATH>
 ```
 
 On afb-daemon startup you should have all the app-framework config displayed:
@@ -145,3 +148,85 @@ HOOK: [xreq-000006:hello/ping] END
 HOOK: [xreq-000001:afTest/launch_all_tests] END
 
 ```
+
+## On target
+
+If you are trying to launch your test on a target you'll have to use
+a test widget which contains test files, fixture and configuration.
+Then use **afm-test**:
+
+```bash
+./afm-test <path>
+```
+
+By default, the test widgets should be located in /usr/AGL/apps/testwgt.
+This it will install the widget, launch the tests then display the result
+on standard output. After that it will kill test app and remove it.
+
+You can produce a widget buy entering ```make widget``` in *build/*.
+
+Here is an example:
+
+```bash
+
+qemux86-64:~# afm-test /usr/AGL/apps/testwgt/aftest-test.wgt
+PASS: aftest-test@5.99 started with pid=3857
+null
+null
+1..62
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 1 TestListverb.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 2 TestGetVerb.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 3 Test_turning_on.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ Begin Test Assert Equals ~~~~~
+~~~~~ End Test Assert Equals ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 4 testAssertEquals.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 5 testAssertNotEquals.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 6 testAssertItemsEquals.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 7 testAssertAlmostEquals.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 8 testAssertNotAlmostEquals.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 9 testAssertEvalToTrue.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 10 testAssertEvalToFalse.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+[...]
+PASS: 60 testAssertVerbStatusError.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 61 testAssertVerbResponseEqualsError.testFunction
+~~~~~ Begin Test ~~~~~
+~~~~~ End Test ~~~~~
+PASS: 62 testAssertVerbCbError.testFunction
+# Ran 62 tests in 0.003 seconds, 62 successes, 0 failures
+~~~~~~~~~~ END ALL TESTS ~~~~~~~~~~
+PASS: aftest-test@5.99 killed and removed
+
+```
+
+The command being : ```afm-test /usr/AGL/apps/testwgt/aftest-test.wgt```
+
+You can see here that everything ran as on your pc terminal.
+**Begin Test**  and **End Test** are the
+beforeEach and afterEach functions and
+**END ALL TESTS**  is the after all functions.
+
+ **PASS :** shows the function that is or was running.
