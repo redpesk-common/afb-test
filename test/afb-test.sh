@@ -5,7 +5,7 @@ trap "cleanup 0" EXIT
 
 cleanup() {
 	trap '' SIGINT SIGTERM SIGABRT SIGHUP EXIT
-	kill $AFTESTPID
+	kill $AFTESTPID > /dev/null 2>&1
 	rm -f $AFTESTSOCKET
 	pkill $PROCNAME
 	exit $1
