@@ -545,6 +545,28 @@ local function call_tests()
 	--end
 end
 
+local function process_tests()
+	-- Execute the test within a context if given. We assume that the before
+	-- function success returning '0' else we abort the whole test procedure
+	if _AFT.beforeAll then
+		if _AFT.beforeAll() == 0 then
+			call_tests()
+		else
+			AFB:fail(_AFT.context, { info = "Can't set the context to execute the tests correctly. Look at the log and retry."})
+		end
+	else
+		call_tests()
+	end
+
+	-- Keep the context unset function to be executed after all no matter if
+	-- tests have been executed or not.
+	if _AFT.afterAll then
+		if _AFT.afterAll() ~= 0 then
+			print('Unsetting the tests context failed.')
+		end
+	end
+end
+
 local function readOneFile(f)
 	local cmdHandle = io.popen('find "'.. _AFT.bindingRootDir..'" -name "'..f..'"')
 	local filehandle = cmdHandle:read()
@@ -576,29 +598,15 @@ function _launch_test(context, args)
 	if args.files and type(args.files) == 'table' then
 		for _,f in pairs(args.files) do
 			readOneFile(f)
+			process_tests()
+			_AFT.beforeEach = nil
+			_AFT.afterEach = nil
+			_AFT.beforeAll = nil
+			_AFT.afterAll = nil
 		end
 	elseif type(args.files) == 'string' then
 		readOneFile(args.files)
-	end
-
-	-- Execute the test within a context if given. We assume that the before
-	-- function success returning '0' else we abort the whole test procedure
-	if _AFT.beforeAll then
-		if _AFT.beforeAll() == 0 then
-			call_tests()
-		else
-			AFB:fail(_AFT.context, { info = "Can't set the context to execute the tests correctly. Look at the log and retry."})
-		end
-	else
-		call_tests()
-	end
-
-	-- Keep the context unset function to be executed after all no matter if
-	-- tests have been executed or not.
-	if _AFT.afterAll then
-		if _AFT.afterAll() ~= 0 then
-			print('Unsetting the tests context failed.')
-		end
+		process_tests()
 	end
 
 	if _AFT.exit[1] == 1 then os.exit(_AFT.exit[2]) end
