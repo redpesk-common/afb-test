@@ -29,8 +29,7 @@ struct mapisHandleT {
 };
 
 static int LoadOneMapi(void *data, AFB_ApiT apiHandle) {
-	int savedCount = 0, count = 0, idx = 0;
-	CtlActionT *savedActions = NULL, *newActions = NULL;
+	int idx = 0;
 	struct mapisHandleT *mapisHandle = (struct mapisHandleT*)data;
 	CtlConfigT *ctrlConfig = AFB_ApiGetUserData(mapisHandle->mainApiHandle);
 
@@ -48,40 +47,14 @@ static int LoadOneMapi(void *data, AFB_ApiT apiHandle) {
 	if(mapisHandle->eventsJ) {
 		// Add actions to the section to be able to respond to defined events.
 		for(idx = 0; ctrlConfig->sections[idx].key != NULL; ++idx) {
-			if(! strcasecmp(ctrlConfig->sections[idx].key, "events")) {
-				savedActions = ctrlConfig->sections[idx].actions;
+			if(! strcasecmp(ctrlConfig->sections[idx].key, "events"))
 				break;
-			}
-		}
-		newActions = ActionConfig(apiHandle, mapisHandle->eventsJ, 0);
-
-		if(savedActions) {
-			while(savedActions[savedCount].uid != NULL)
-				savedCount++;
 		}
 
-		while(newActions[count].uid != NULL)
-			count++;
-
-		int total = savedCount + count;
-		count = 0;
-		savedCount = 0;
-		CtlActionT * mergedActions = calloc(total + 1, sizeof(CtlActionT));
-
-		if(savedActions) {
-			while(savedActions[count].uid != NULL) {
-				mergedActions[count] = savedActions[count];
-				count++;
-			}
+		if( AddActionsToSection(apiHandle, &ctrlConfig->sections[idx], mapisHandle->eventsJ, 0) ) {
+			AFB_ApiError(apiHandle, "Wasn't able to add new events to %s", ctrlConfig->sections[idx].uid);
+			return -1;
 		}
-
-		while(newActions[savedCount].uid != NULL && count <= total) {
-			mergedActions[count] = newActions[savedCount];
-			count++;
-			savedCount++;
-		}
-
-		ctrlConfig->sections[idx].actions = mergedActions;
 	}
 
 	// declare an event event manager for this API;
