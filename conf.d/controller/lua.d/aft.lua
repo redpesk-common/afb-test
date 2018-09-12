@@ -20,7 +20,6 @@
 
 local lu = require('luaunit')
 lu.LuaUnit:setOutputType('TAP')
-lu.LuaUnit.fname = "xUnitResults.xml"
 
 _AFT = {
 	exit = {0, code},
@@ -44,7 +43,23 @@ function _AFT.setJunitFile(filePath)
 end
 
 function _AFT.setOutputFile(filePath)
-	local file = assert(io.open(filePath, "w+"))
+	local fileName = string.gsub(filePath, "(.*)%..*$", "%1")
+	local file = nil
+
+	-- Set the file output according the output type chosen.
+	-- JUNIT produces 2 files, the first one using TXT format and a second
+	-- one using xUnit XML format.
+	if lu.LuaUnit.outputType.__class__ == 'TapOutput' then
+		file = assert(io.open(fileName..".tap", "w+"))
+	elseif lu.LuaUnit.outputType.__class__ == 'JunitOutput' then
+		file = assert(io.open(fileName..".txt", "w+"))
+		lu.LuaUnit.fname = fileName..".xml"
+	elseif lu.LuaUnit.outputType.__class__ == 'TextOutput' then
+		file = assert(io.open(fileName..".txt", "w+"))
+	else
+		file = assert(io.open(filePath, "w+"))
+	end
+
 	io.output(file)
 	io.stdout = file
 end
@@ -55,7 +70,6 @@ end
 
 -- Use our own print function to redirect it to a file in the workdir of the
 -- binder instead of the standard output.
-_AFT.setOutputFile("test_results.log")
 _standard_print = print
 print = function(...)
 	io.write(... .. '\n')
@@ -597,14 +611,17 @@ function _launch_test(context, args)
 
 	if args.files and type(args.files) == 'table' then
 		for _,f in pairs(args.files) do
+			_AFT.setOutputFile(f)
 			readOneFile(f)
 			process_tests()
 			_AFT.beforeEach = nil
 			_AFT.afterEach = nil
 			_AFT.beforeAll = nil
 			_AFT.afterAll = nil
+			_AFT.tests_list = {}
 		end
 	elseif type(args.files) == 'string' then
+		_AFT.setOutputFile(f)
 		readOneFile(args.files)
 		process_tests()
 	end
