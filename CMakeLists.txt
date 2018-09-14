@@ -22,5 +22,3 @@ include(CTest)
 enable_testing()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/conf.d/cmake/config.cmake)
-
-INSTALL(PROGRAMS afm-test DESTINATION ${CMAKE_INSTALL_BINDIR})

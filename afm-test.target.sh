@@ -34,11 +34,11 @@ EOF
 }
 
 function error() {
-	echo "FAIL: $@" >&2
+	echo "FAIL: $*" >&2
 	cleanup
 }
 function info() {
-	echo "PASS: $@" >&2
+	echo "PASS: $*" >&2
 }
 
 # check application name passed as first arg
