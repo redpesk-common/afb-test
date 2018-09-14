@@ -16,11 +16,10 @@
 # limitations under the License.
 ###########################################################################
 
-#INSTALL(PROGRAMS afm-test DESTINATION ${CMAKE_INSTALL_BINDIR})
-PROJECT_TARGET_ADD(afm-test-script)
+if("${OSRELEASE}" STREQUAL "poky-agl" OR "${OSRELEASE}" STREQUAL "yocto-build")
+	set(AFM_TEST "afm-test.target.sh")
+else()
+	set(AFM_TEST "afm-test.native.sh")
+endif()
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/afm-test
-		COMMAND install -m 775 ${CMAKE_CURRENT_SOURCE_DIR}/afm-test ${CMAKE_CURRENT_BINARY_DIR}/afm-test
-)
-
-add_custom_target(${TARGET_NAME} DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/afm-test)
+install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/${AFM_TEST} DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME afm-test)
