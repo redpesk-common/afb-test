@@ -17,7 +17,7 @@
 	</feature>
 
 	<feature name="urn:AGL:widget:provided-api">
-		<param name="afTest" value="ws" />
+		<param name="@API_NAME@" value="ws" />
 	</feature>
 
 	<feature name="urn:AGL:widget:required-binding">

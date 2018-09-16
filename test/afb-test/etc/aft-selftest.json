@@ -4,7 +4,7 @@
     "metadata": {
         "uid": "Test",
         "version": "1.0",
-        "api": "aft-aftest",
+        "api": "aft-selftest",
         "info": "Binding made to test other bindings",
         "require": [
             "low-can"

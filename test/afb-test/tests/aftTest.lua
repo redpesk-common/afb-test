@@ -97,13 +97,13 @@ _AFT.describe("testAssertNotIsThread", function()	_AFT.assertNotIsThread(2) end)
 _AFT.describe("testAssertNotIsUserdata", function()	_AFT.assertNotIsUserdata(2) end)
 
 function _callback(responseJ) _AFT.assertNotIsNil(responseJ) end
-function _callbackError(responseJ) _AFT.assertStrContains(responseJ.request.info, "verb pingfail unknown within api afTest") end
+function _callbackError(responseJ) _AFT.assertStrContains(responseJ.request.info, "verb pingfail unknown within api aft") end
 
-_AFT.describe("testAssertVerbStatusSuccess",function() _AFT.assertVerbStatusSuccess('afTest', 'ping', {}) end)
-_AFT.describe("testAssertVerbResponseEquals",function() _AFT.assertVerbResponseEquals('afTest', 'ping', {}) end)
-_AFT.describe("testAssertVerbCb",function() _AFT.assertVerbCb('afTest', 'ping', {},_callback) end)
-_AFT.describe("testAssertVerbStatusError",function() _AFT.assertVerbStatusError('afTest', 'pingfail', {}) end)
-_AFT.describe("testAssertVerbResponseEqualsError",function() _AFT.assertVerbResponseEqualsError('afTest', 'nonexistentverb', {},"Ping Binder Daemon fails") end)
-_AFT.describe("testAssertVerbCbError",function() _AFT.assertVerbCbError('afTest', 'pingfail', {},_callbackError) end)
+_AFT.describe("testAssertVerbStatusSuccess",function() _AFT.assertVerbStatusSuccess('aft', 'ping', {}) end)
+_AFT.describe("testAssertVerbResponseEquals",function() _AFT.assertVerbResponseEquals('aft', 'ping', {}) end)
+_AFT.describe("testAssertVerbCb",function() _AFT.assertVerbCb('aft', 'ping', {},_callback) end)
+_AFT.describe("testAssertVerbStatusError",function() _AFT.assertVerbStatusError('aft', 'pingfail', {}) end)
+_AFT.describe("testAssertVerbResponseEqualsError",function() _AFT.assertVerbResponseEqualsError('aft', 'nonexistentverb', {},"Ping Binder Daemon fails") end)
+_AFT.describe("testAssertVerbCbError",function() _AFT.assertVerbCbError('aft', 'pingfail', {},_callbackError) end)
 
 _AFT.exitAtEnd()
