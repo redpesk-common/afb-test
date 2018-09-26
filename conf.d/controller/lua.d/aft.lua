@@ -378,17 +378,28 @@ function _AFT.assertVerbError(api, verb, args, cb)
 	end
 end
 
-function _AFT.testVerb(testName, api, verb, args, cb, setUp, tearDown)
+function _AFT.testVerbCb(testName, api, verb, args, cb, setUp, tearDown)
 	_AFT.describe(testName, function()
 		_AFT.assertVerb(api, verb, args, cb)
 	end, setUp, tearDown)
 end
 
-function _AFT.testVerbError(testName, api, verb, args, cb, setUp, tearDown)
+function _AFT.testVerbCbError(testName, api, verb, args, cb, setUp, tearDown)
 	_AFT.describe(testName, function()
-				_AFT.assertVerbError(api, verb, args, cb)
-			end, setUp, tearDown)
+		_AFT.assertVerbError(api, verb, args, cb)
+	end, setUp, tearDown)
+end
 
+function _AFT.testVerb(testName, api, verb, args, setUp, tearDown)
+	_AFT.describe(testName, function()
+		_AFT.assertVerb(api, verb, args)
+	end, setUp, tearDown)
+end
+
+function _AFT.testVerbError(testName, api, verb, args, setUp, tearDown)
+	_AFT.describe(testName, function()
+		_AFT.assertVerbError(api, verb, args)
+	end, setUp, tearDown)
 end
 
 function _AFT.describe(testName, testFunction, setUp, tearDown)
@@ -556,10 +567,8 @@ local _AFT_list_of_funcs = {
 	{ 'assertVerbError', 'assertVerbCbError' },
 	{ 'testVerb',      'testVerbStatusSuccess' },
 	{ 'testVerb',      'testVerbResponseEquals' },
-	{ 'testVerb',      'testVerbCb' },
 	{ 'testVerbError', 'testVerbStatusError' },
 	{ 'testVerbError', 'testVerbResponseEqualsError' },
-	{ 'testVerbError', 'testVerbCbError' },
 }
 
 -- Import all luaunit assertion function to _AFT object
