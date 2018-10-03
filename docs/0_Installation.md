@@ -35,3 +35,31 @@ mkdir build
 cd build
 cmake .. && make
 ```
+
+## Test natively on your host
+
+If you want to use the **afb-test** binding natively on your host, you have to
+install it. Then *pkg-config* tool can find the **afb-test.pc** and you can
+use **afm-test** launcher:
+
+```bash
+sudo make install
+# Eventually set PKG_CONFIG_PATH environment variable if not installed in the
+# system directory
+export PKG_CONFIG_PATH=<path-to-pkgconfig-dir>:${PKG_CONFIG_PATH}
+# The same for the PATH environment variable where afm-test has been installed
+export PATH=<path-to-afm-test-dir>:${PATH}
+```
+
+Then you can test other binding using the **afm-test** launcher. Example here,
+with another binding project using **app-templates** submodule or the
+**cmake-apps-module** CMake module:
+
+> **Note** CMake module is the new way to use **app-templates**
+
+```bash
+cd build
+cmake ..
+make
+afm-test package package-test
+```
