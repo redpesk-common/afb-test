@@ -1,4 +1,4 @@
-# Binding configuration
+# Test configuration
 
 The file `aft-test.json` contains the controller binding configuration. Here,
 you have to change or define the *files* key in the *args* object of the

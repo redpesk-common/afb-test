@@ -1,7 +1,5 @@
 # LUA Test files
 
-First, ensure that you put your LUA tests files in the `lua.d` directory.
-
 You have two differents things to take in account when you'll write your tests
 using this framework: *test* and *assertions*.
 
