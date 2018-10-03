@@ -68,6 +68,9 @@ fi
 
 TESTCFGFILE=$(find "${TESTPACKAGEDIR}" -name "aft-*.json" -print | head -n1)
 TESTPROCNAME=$(grep '\"api\"' "${TESTCFGFILE}" | cut -d'"' -f4)
+[ -z "${TESTPROCNAME}" ]  && \
+echo "Can't find 'api' key from your test configuration file: ${TESTCFGFILE}.\n Either configuration file doesn't exist either it is incorrect." && \
+cleanNexit 4
 
 API=$(grep "provided-api" "${SERVICEPACKAGEDIR}/config.xml" -A1 2> /dev/null |  sed -r -e '1d' -e 's:.*"(.*)" v.*:\1:' 2> /dev/null)
 if [ -z "$API" ] && [ "$MODE" = "SERVICE" ]
