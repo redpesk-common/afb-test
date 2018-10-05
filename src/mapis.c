@@ -21,26 +21,26 @@
 #include <ctl-config.h>
 
 struct mapisHandleT {
-	AFB_ApiT mainApiHandle;
+	afb_api_t mainApiHandle;
 	CtlSectionT *section;
 	json_object *mapiJ;
 	json_object *verbsJ;
 	json_object *eventsJ;
 };
 
-static int LoadOneMapi(void *data, AFB_ApiT apiHandle) {
+static int LoadOneMapi(void *data, afb_api_t apiHandle) {
 	int idx = 0;
 	struct mapisHandleT *mapisHandle = (struct mapisHandleT*)data;
-	CtlConfigT *ctrlConfig = AFB_ApiGetUserData(mapisHandle->mainApiHandle);
+	CtlConfigT *ctrlConfig = afb_api_get_userdata(mapisHandle->mainApiHandle);
 
 	if(PluginConfig(apiHandle, mapisHandle->section, mapisHandle->mapiJ)) {
-		AFB_ApiError(apiHandle, "Problem loading the plugin as an API for %s, see log message above", json_object_get_string(mapisHandle->mapiJ));
+		AFB_API_ERROR(apiHandle, "Problem loading the plugin as an API for %s, see log message above", json_object_get_string(mapisHandle->mapiJ));
 		return -1;
 	}
 
 	// declare the verbs for this API
 	if(! ActionConfig(apiHandle, mapisHandle->verbsJ, 1)) {
-		AFB_ApiError(apiHandle, "Problems at verbs creations for %s", json_object_get_string(mapisHandle->mapiJ));
+		AFB_API_ERROR(apiHandle, "Problems at verbs creations for %s", json_object_get_string(mapisHandle->mapiJ));
 		return -1;
 	}
 
@@ -52,13 +52,13 @@ static int LoadOneMapi(void *data, AFB_ApiT apiHandle) {
 		}
 
 		if( AddActionsToSection(apiHandle, &ctrlConfig->sections[idx], mapisHandle->eventsJ, 0) ) {
-			AFB_ApiError(apiHandle, "Wasn't able to add new events to %s", ctrlConfig->sections[idx].uid);
+			AFB_API_ERROR(apiHandle, "Wasn't able to add new events to %s", ctrlConfig->sections[idx].uid);
 			return -1;
 		}
 	}
 
 	// declare an event event manager for this API;
-	AFB_ApiOnEvent(apiHandle, CtrlDispatchApiEvent);
+	afb_api_on_event(apiHandle, CtrlDispatchApiEvent);
 
 	return 0;
 }
@@ -77,7 +77,7 @@ static void OneMapiConfig(void *data, json_object *mapiJ) {
 					"lua", NULL,
 					"verbs", &mapisHandle->verbsJ,
 					"events", &mapisHandle->eventsJ)) {
-			AFB_ApiError(mapisHandle->mainApiHandle, "Wrong mapis specification, missing uid|[info]|[spath]|libs|[lua]|verbs|[events] for %s", json_object_get_string(mapiJ));
+			AFB_API_ERROR(mapisHandle->mainApiHandle, "Wrong mapis specification, missing uid|[info]|[spath]|libs|[lua]|verbs|[events] for %s", json_object_get_string(mapiJ));
 			return;
 		}
 
@@ -87,12 +87,12 @@ static void OneMapiConfig(void *data, json_object *mapiJ) {
 		json_object_object_del(mapiJ, "events");
 		mapisHandle->mapiJ = mapiJ;
 
-		if (!AFB_NewApi(mapisHandle->mainApiHandle, uid, info, 1, LoadOneMapi, (void*)mapisHandle))
-			AFB_ApiError(mapisHandle->mainApiHandle, "Error creating new api: %s", uid);
+		if (!afb_api_new_api(mapisHandle->mainApiHandle, uid, info, 1, LoadOneMapi, (void*)mapisHandle))
+			AFB_API_ERROR(mapisHandle->mainApiHandle, "Error creating new api: %s", uid);
 	}
 }
 
-int MapiConfig(AFB_ApiT apiHandle, CtlSectionT *section, json_object *mapisJ) {
+int MapiConfig(afb_api_t apiHandle, CtlSectionT *section, json_object *mapisJ) {
 	struct mapisHandleT mapisHandle = {
 		.mainApiHandle = apiHandle,
 		.section = section,
