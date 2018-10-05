@@ -60,16 +60,20 @@ kill -0 $pid
 RUNNING=$?
 while [[ $RUNNING -eq 0 ]]
 do
-	kill -0 $pid
+	kill -0 $pid 2> /dev/null
 	RUNNING=$?
 	sleep 0.2
 done
 
 # Terminate the App
-afm-util kill $pid >&2
-afm-util remove $APP >&2
+afm-util kill $pid > /dev/null
+afm-util remove $APP > /dev/null
 
 # Little sed script making compliant the output of test results for ptest.
-sed -r -e '/^# (S| +)/d' -e '1d' -e 's:^ok +([0-9]+)\t+(.*):PASS\: \1 \2:' -e 's:^not ok +([0-9]+)\t+(.*):FAIL\: \1 \2:' ${APP_HOME}/test_results.log
+find "${APP_HOME}" -name '*tap' -exec \
+sed -r -e '/^# (S| +)/d' \
+-e '1d' \
+-e 's:^ok +([0-9]+)\t+(.*):PASS\: \1 \2:' \
+-e 's:^not ok +([0-9]+)\t+(.*):FAIL\: \1 \2:' {} \;
 
 info "$APP killed and removed"
