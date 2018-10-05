@@ -47,7 +47,7 @@ then
 	SERVICEPACKAGEDIR="$(readlink -f $1)"
 	TESTPACKAGEDIR="$(readlink -f $2)"
 else
-	echo "Error: you doesn't specified either the binding folder location either test widget folder location."
+	echo "Error: you did not specify either the binding folder location or test widget folder location."
 	usage
 	cleanNexit 1
 fi
@@ -67,25 +67,24 @@ else
 fi
 
 TESTCFGFILE=$(find "${TESTPACKAGEDIR}" -name "aft-*.json" -print | head -n1)
-TESTPROCNAME=$(grep '\"api\"' "${TESTCFGFILE}" | cut -d'"' -f4)
-[ -z "${TESTPROCNAME}" ]  && \
-echo "Can't find 'api' key from your test configuration file: ${TESTCFGFILE}.\n Either configuration file doesn't exist either it is incorrect." && \
-cleanNexit 4
+TESTAPINAME=$(grep '\"api\"' "${TESTCFGFILE}" | cut -d'"' -f4)
+[ ! -f "${TESTPACKAGEDIR}/config.xml" ] && \
+	echo "Error: you don't have the config.xml file. Please call 'make widget'" && \
+	cleanNexit 5
+TESTPROCNAME="afbd-$(grep -Eo 'id=".*" ' ${TESTPACKAGEDIR}/config.xml | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]')"
 
 API=$(grep "provided-api" "${SERVICEPACKAGEDIR}/config.xml" -A1 2> /dev/null |  sed -r -e '1d' -e 's:.*"(.*)" v.*:\1:' 2> /dev/null)
-if [ -z "$API" ] && [ "$MODE" = "SERVICE" ]
-then
-	echo "Error: you doesn't have the config.xml file. Please call 'make widget'"
+[ -z "$API" ] && [ "$MODE" = "SERVICE" ] && \
+	echo "Error: you doesn't have the config.xml file. Please call 'make widget'" && \
 	cleanNexit 2
-else
-	ENV_API=$(echo ${API} | sed 's:[^a-zA-Z0-9_]:_:g')
-	declare AFT_${ENV_API}_CONFIG_PATH="${SERVICEPACKAGEDIR}"
-	declare AFT_$(echo ${ENV_API} | sed 's:[^a-zA-Z0-9_]:_:g')_PLUGIN_PATH="${SERVICEPACKAGEDIR}"
-	export AFT_${ENV_API}_CONFIG_PATH
-	export AFT_${ENV_API}_PLUGIN_PATH
-	PROCNAME="afbd-${API}"
-	SOCKETSERVICE="/tmp/$API"
-fi
+
+ENV_API=$(echo ${API} | sed 's:[^a-zA-Z0-9_]:_:g')
+declare AFT_${ENV_API}_CONFIG_PATH="${SERVICEPACKAGEDIR}"
+declare AFT_$(echo ${ENV_API} | sed 's:[^a-zA-Z0-9_]:_:g')_PLUGIN_PATH="${SERVICEPACKAGEDIR}"
+export AFT_${ENV_API}_CONFIG_PATH
+export AFT_${ENV_API}_PLUGIN_PATH
+PROCNAME="afbd-$(grep -Eo 'id=".*" ' ${SERVICEPACKAGEDIR}/config.xml | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]')"
+SOCKETSERVICE="/tmp/$API"
 
 export AFT_CONFIG_PATH="${TESTPACKAGEDIR}"
 export AFT_PLUGIN_PATH="${TESTPACKAGEDIR}"
@@ -106,15 +105,15 @@ then
 			--workdir="${TESTPACKAGEDIR}" \
 			--ldpaths=${SERVICEPACKAGEDIR} \
 			--binding="${AFBTEST}" \
-			--call="${TESTPROCNAME}/launch_all_tests:{}" \
-			--call="${TESTPROCNAME}/exit:{}" \
+			--call="${TESTAPINAME}/launch_all_tests:{}" \
+			--call="${TESTAPINAME}/exit:{}" \
 			-vvv &> ${LOGFILETEST}
 elif [ ${MODE} = "SERVICE" ]
 then
 	pkill "$TESTPROCNAME"
 	pkill "$PROCNAME"
 
-	timeout -s 9 ${TIMEOUT} ${BINDER} --name=${PROCNAME} \
+	timeout -s 9 ${TIMEOUT} ${BINDER} --name="${PROCNAME}" \
 				--workdir="${SERVICEPACKAGEDIR}" \
 				--port=${PORTSERVICE} \
 				--ldpaths=. \
@@ -131,10 +130,9 @@ then
 				--workdir="${TESTPACKAGEDIR}" \
 				--binding="${AFBTEST}" \
 				--ws-client=unix:${SOCKETSERVICE} \
-				--call="${TESTPROCNAME}/launch_all_tests:{}" \
-				--call="${TESTPROCNAME}/exit:{}" \
+				--call="${TESTAPINAME}/launch_all_tests:{}" \
+				--call="${TESTAPINAME}/exit:{}" \
 				-vvv &> ${LOGFILETEST}
-
 else
 	echo "Error: No mode selected. Choose between SOLO or SERVICE"
 	usage
