@@ -20,10 +20,20 @@
 
 trap "cleanNexit 1" SIGHUP SIGINT SIGABRT SIGTERM
 cleanNexit() {
-  rm -f $SOCKETSERVICE 2> /dev/null
-  trap '' EXIT SIGHUP SIGINT SIGABRT SIGTERM
-  [ $1 -ne 0 ] && echo "Error: Test launch failed. Code: $1" && cat ${LOGFILETEST} ${LOGFILESERVICE}
-  exit $1
+	rm -f $SOCKETSERVICE 2> /dev/null
+	trap '' EXIT SIGHUP SIGINT SIGABRT SIGTERM
+	if [ $1 -ne 0 ]
+	then
+		[ -f ${LOGFILESERVICE} ] && cat ${LOGFILESERVICE}
+		[ -f ${LOGFILETEST} ] && cat ${LOGFILETEST}
+		echo "Error: Test launch failed. Code: $1"
+	else
+		find ${TESTPACKAGEDIR} -maxdepth 1 -name '*.tap' -exec cat {} \;
+		find ${TESTPACKAGEDIR} -maxdepth 1 -name '*.txt' -exec cat {} \;
+		find ${TESTPACKAGEDIR} -maxdepth 1 -name '*.xml' -a ! -name 'config.xml' -exec cat {} \;
+		echo "Tests correctly launched."
+	fi
+	exit $1
 }
 
 function usage() {
