@@ -31,3 +31,15 @@ _AFT.describe("Test_turning_on", function()
 
     _AFT.assertEvtGrpReceived({[evt1] = 1, [evt2] = 1})
 end)
+
+
+_AFT.describe("testLockWait",function()
+    local evt1 = "low-can/messages_engine_speed"
+    local timeout = 2000000
+    _AFT.addEventToMonitor(evt1)
+    local start = os.time() * 1000000
+    _AFT.assertEvtNotReceived(evt1, timeout)
+    local stop = os.time() * 1000000
+
+    _AFT.assertIsTrue( (stop - start) >= timeout, "Timeout not reached, LockWait feature is not working." )
+  end, nil, nil)
