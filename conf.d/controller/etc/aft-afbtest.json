@@ -5,18 +5,6 @@
         "uid": "Test",
         "version": "1.0",
         "api": "aft",
-        "info": "Binding made to test other bindings",
-        "require": [
-            "hello"
-        ]
-    },
-    "testVerb": {
-        "uid": "launch_all_tests",
-        "info": "Launch all the tests",
-        "action": "lua://AFT#_launch_test",
-        "args": {
-            "trace": "hello",
-            "files": ["aftTest.lua","helloworld.lua"]
-        }
+        "info": "Binding made to test other bindings"
     }
 }
