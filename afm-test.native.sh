@@ -20,17 +20,17 @@
 
 trap "cleanNexit 1" SIGHUP SIGINT SIGABRT SIGTERM
 cleanNexit() {
-	rm -f $SOCKETSERVICE 2> /dev/null
+	rm -f "$SOCKETSERVICE" 2> /dev/null
 	trap '' EXIT SIGHUP SIGINT SIGABRT SIGTERM
 	if [ $1 -ne 0 ]
 	then
-		[ -f ${LOGFILESERVICE} ] && cat ${LOGFILESERVICE}
-		[ -f ${LOGFILETEST} ] && cat ${LOGFILETEST}
+		[ -f "${LOGFILESERVICE}" ] && cat "${LOGFILESERVICE}"
+		[ -f "${LOGFILETEST}" ] && cat "${LOGFILETEST}"
 		echo "Error: Test launch failed. Code: $1"
 	else
-		find ${TESTPACKAGEDIR} -maxdepth 1 -name '*.tap' -exec cat {} \;
-		find ${TESTPACKAGEDIR} -maxdepth 1 -name '*.txt' -exec cat {} \;
-		find ${TESTPACKAGEDIR} -maxdepth 1 -name '*.xml' -a ! -name 'config.xml' -exec cat {} \;
+		find "${TESTPACKAGEDIR}" -maxdepth 1 -name '*.tap' -exec cat {} \;
+		find "${TESTPACKAGEDIR}" -maxdepth 1 -name '*.txt' -exec cat {} \;
+		find "${TESTPACKAGEDIR}" -maxdepth 1 -name '*.xml' -a ! -name 'config.xml' -exec cat {} \;
 		echo "Tests correctly launched."
 	fi
 	exit $1
@@ -81,7 +81,7 @@ TESTAPINAME=$(grep '\"api\"' "${TESTCFGFILE}" | cut -d'"' -f4)
 [ ! -f "${TESTPACKAGEDIR}/config.xml" ] && \
 	echo "Error: you don't have the config.xml file. Please call 'make widget'" && \
 	cleanNexit 5
-TESTPROCNAME="afbd-$(grep -Eo 'id=".*" ' ${TESTPACKAGEDIR}/config.xml | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]')"
+TESTPROCNAME="afbd-$(grep -Eo 'id=".*" ' "${TESTPACKAGEDIR}/config.xml" | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]')"
 
 API=$(grep "provided-api" "${SERVICEPACKAGEDIR}/config.xml" -A1 2> /dev/null |  sed -r -e '1d' -e 's:.*"(.*)" v.*:\1:' 2> /dev/null)
 [ -z "$API" ] && [ "$MODE" = "SERVICE" ] && \
@@ -93,7 +93,7 @@ declare AFT_${ENV_API}_CONFIG_PATH="${SERVICEPACKAGEDIR}"
 declare AFT_$(echo ${ENV_API} | sed 's:[^a-zA-Z0-9_]:_:g')_PLUGIN_PATH="${SERVICEPACKAGEDIR}"
 export AFT_${ENV_API}_CONFIG_PATH
 export AFT_${ENV_API}_PLUGIN_PATH
-PROCNAME="afbd-$(grep -Eo 'id=".*" ' ${SERVICEPACKAGEDIR}/config.xml | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]')"
+PROCNAME="afbd-$(grep -Eo 'id=".*" ' "${SERVICEPACKAGEDIR}/config.xml" | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]')"
 SOCKETSERVICE="/tmp/$API"
 
 export AFT_CONFIG_PATH="${TESTPACKAGEDIR}"
@@ -113,11 +113,11 @@ then
 			--tracereq=common \
 			--token=${TOKEN} \
 			--workdir="${TESTPACKAGEDIR}" \
-			--ldpaths=${SERVICEPACKAGEDIR} \
+			--ldpaths="${SERVICEPACKAGEDIR}" \
 			--binding="${AFBTEST}" \
 			--call="${TESTAPINAME}/launch_all_tests:{}" \
 			--call="${TESTAPINAME}/exit:{}" \
-			-vvv &> ${LOGFILETEST}
+			-vvv &> "${LOGFILETEST}"
 elif [ ${MODE} = "SERVICE" ]
 then
 	pkill "$TESTPROCNAME"
@@ -128,7 +128,7 @@ then
 				--port=${PORTSERVICE} \
 				--ldpaths=. \
 				-vvv \
-				--ws-server=unix:${SOCKETSERVICE} &> ${LOGFILESERVICE} &
+				--ws-server=unix:"${SOCKETSERVICE}" &> "${LOGFILESERVICE}" &
 
 	sleep 0.3
 
@@ -139,10 +139,10 @@ then
 				--token=${TOKEN} \
 				--workdir="${TESTPACKAGEDIR}" \
 				--binding="${AFBTEST}" \
-				--ws-client=unix:${SOCKETSERVICE} \
+				--ws-client=unix:"${SOCKETSERVICE}" \
 				--call="${TESTAPINAME}/launch_all_tests:{}" \
 				--call="${TESTAPINAME}/exit:{}" \
-				-vvv &> ${LOGFILETEST}
+				-vvv &> "${LOGFILETEST}"
 else
 	echo "Error: No mode selected. Choose between SOLO or SERVICE"
 	usage
