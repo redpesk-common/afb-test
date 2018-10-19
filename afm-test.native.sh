@@ -96,11 +96,28 @@ export AFT_${ENV_API}_PLUGIN_PATH
 PROCNAME="afbd-$(grep -Eo 'id=".*" ' "${SERVICEPACKAGEDIR}/config.xml" | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]')"
 SOCKETSERVICE="/tmp/$API"
 
+declare -a testVerb
+
+if [[ $(jq -r '.testVerb|type' ${TESTCFGFILE}) == "array" ]]
+then
+        testVerbLength=$(jq '.testVerb|length' ${TESTCFGFILE})
+        for (( idx=0; idx<testVerbLength; idx++ )) do
+                testVerb[$idx]=$(jq -r ".testVerb[$idx].uid" ${TESTCFGFILE})
+        done
+else
+        testVerb[0]=$(jq -r ".testVerb.uid" ${TESTCFGFILE})
+fi
+
 export AFT_CONFIG_PATH="${TESTPACKAGEDIR}"
 export AFT_PLUGIN_PATH="${TESTPACKAGEDIR}"
 
 LOGFILESERVICE="test-service.log"
 LOGFILETEST="test.log"
+
+testVerbLength=${#testVerb[@]}
+for (( idx=0; idx<testVerbLength; idx++ )) do
+	testVerbCalls="--call=${TESTAPINAME}/${testVerb[$idx]}:'{}' ${testVerbCalls}"
+done
 
 if [ ${MODE} = "SOLO" ]
 then
@@ -115,7 +132,7 @@ then
 			--workdir="${TESTPACKAGEDIR}" \
 			--ldpaths="${SERVICEPACKAGEDIR}" \
 			--binding="${AFBTEST}" \
-			--call="${TESTAPINAME}/launch_all_tests:{}" \
+			$(echo -e "${testVerbCalls}") \
 			--call="${TESTAPINAME}/exit:{}" \
 			-vvv &> "${LOGFILETEST}"
 elif [ ${MODE} = "SERVICE" ]
@@ -140,7 +157,7 @@ then
 				--workdir="${TESTPACKAGEDIR}" \
 				--binding="${AFBTEST}" \
 				--ws-client=unix:"${SOCKETSERVICE}" \
-				--call="${TESTAPINAME}/launch_all_tests:{}" \
+				$(echo -e "${testVerbCalls}") \
 				--call="${TESTAPINAME}/exit:{}" \
 				-vvv &> "${LOGFILETEST}"
 else
