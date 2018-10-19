@@ -665,7 +665,7 @@ function _launch_test(context, args)
 			_AFT.tests_list = {}
 		end
 	elseif type(args.files) == 'string' then
-		_AFT.setOutputFile(f)
+		_AFT.setOutputFile(args.files)
 		readOneFile(args.files)
 		process_tests()
 	end
