@@ -23,12 +23,15 @@ trap cleanup SIGTERM SIGINT SIGABRT SIGHUP
 function cleanup() {
 	afm-util kill $pid >&2
 	afm-util remove $APP >&2
+	rm ${AFM_PLATFORM_RUNDIR}/${APP}.env 2> /dev/null
 	exit 1
 }
 
  function usage() {
 cat >&2 << EOF
-Usage: $0 <path>
+Usage: $0 [-l|--lava] [-v|--verb <verb>] <path>
+-l|--lavaoutput: flag that enable Lava test marker to the output. (Default: disabled)
+-v|--verb: select a specific verb to launch from the test API. (Default: all)
 path: path to the test wgt file
 EOF
 }
@@ -41,6 +44,29 @@ function info() {
 	echo "PASS: $*" >&2
 }
 
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+	-l|--lavaoutput)
+	VERBARGS="{'lavaOutput':true}"
+	shift # past argument
+	;;
+	-v|--verb)
+	VERBSELECTED="$2"
+	shift # past argument
+	shift # past value
+	;;
+	*)
+	POSITIONAL+=("$1") # save it in an array for later
+	shift # past argument
+	;;
+esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
 # check application name passed as first arg
 WGT=$1
 [[ -z "$WGT" ]] && { usage; exit 0;}
@@ -48,8 +74,19 @@ WGT=$1
 
 INSTALL=$(afm-util install $WGT)
 APP=$(echo $INSTALL | jq -r .added)
+AFM_PLATFORM_RUNDIR=/run/platform/debug/
 [[ "$APP" == "null" ]] && error "Widget contains error. Abort"
 APP_HOME=${HOME}/app-data/$(echo ${APP} |cut -d'@' -f1)
+
+# Clean the old test results
+find "${APP_HOME}" -name '*tap' -exec rm -f {} \;
+
+# Configure the test launch for a specific verb and args
+mkdir -p ${AFM_PLATFORM_RUNDIR}
+cat > ${AFM_PLATFORM_RUNDIR}/${APP}.env << EOF
+VERBSELECTED="${VERBSELECTED}"
+VERBARGS="${VERBARGS}"
+EOF
 
 # ask appfw to start application
 pid=$(afm-util start $APP)
@@ -68,12 +105,12 @@ done
 # Terminate the App
 afm-util kill $pid > /dev/null
 afm-util remove $APP > /dev/null
+rm ${AFM_PLATFORM_RUNDIR}/${APP}.env 2> /dev/null
 
-# Little sed script making compliant the output of test results for ptest.
 find "${APP_HOME}" -name '*tap' -exec \
 sed -r -e '/^# (S| +)/d' \
--e '1d' \
--e 's:^ok +([0-9]+)\t+(.*):PASS\: \1 \2:' \
--e 's:^not ok +([0-9]+)\t+(.*):FAIL\: \1 \2:' {} \;
+--e '1d' \
+--e 's:^ok +([0-9]+)\t+(.*):PASS\: \1 \2:' \
+--e 's:^not ok +([0-9]+)\t+(.*):FAIL\: \1 \2:' {} \;
 
 info "$APP killed and removed"

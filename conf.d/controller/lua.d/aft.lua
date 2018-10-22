@@ -32,6 +32,7 @@ _AFT = {
 	afterEach = nil,
 	beforeAll = nil,
 	afterAll = nil,
+	lavaOutput = false,
 }
 
 function _AFT.enableEventHistory()
@@ -412,12 +413,26 @@ function _AFT.describe(testName, testFunction, setUp, tearDown)
 		os.exit(1)
 	end
 	function aTest:setUp()
+		if _AFT.lavaOutput then
+			print('<LAVA_SIGNAL_STARTTC '..testName..'>')
+		end
 		if _AFT.beforeEach then _AFT.beforeEach() end
 		if type(setUp) == 'function' then setUp() end
 	end
 	function aTest:tearDown()
 		if type(tearDown) == 'function' then tearDown() end
 		if _AFT.afterEach then _AFT.afterEach() end
+		if _AFT.lavaOutput then
+			local result = 'FAIL'
+			for _,v in pairs(lu.LuaUnit.result.tests) do
+				if v.className == testName then
+					result = v.status
+				end
+			end
+
+			print('<LAVA_SIGNAL_TESTCASE TEST_CASE_ID='..testName..' RESULT='..result..'>')
+			print('<LAVA_SIGNAL_ENDTC '..testName..'>')
+		end
 	end
 
 	table.insert(_AFT.tests_list, {testName, aTest})
@@ -636,25 +651,28 @@ local function readOneFile(f)
 	cmdHandle:close()
 end
 
-function _launch_test(context, args)
+function _launch_test(context, confArgs, queryArgs)
 	_AFT.context = context
 	_AFT.bindingRootDir = AFB:getrootdir(_AFT.context)
+
+	-- Enable the lava additionals output markers
+	if queryArgs and queryArgs.lavaOutput then _AFT.lavaOutput = queryArgs.lavaOutput end
 
 	-- Prepare the tests execution configuring the monitoring and loading
 	-- lua test files to execute in the Framework.
 	AFB:servsync(_AFT.context, "monitor", "set", { verbosity = "debug" })
-	if type(args.trace) == "string" then
-		AFB:servsync(_AFT.context, "monitor", "trace", { add = { request = "vverbose", event = "push_after", pattern = args.trace.."/*" }})
-	elseif type(args.trace) == "table" then
-		for _,v in pairs(args.trace) do
+	if type(confArgs.trace) == "string" then
+		AFB:servsync(_AFT.context, "monitor", "trace", { add = { request = "vverbose", event = "push_after", pattern = confArgs.trace.."/*" }})
+	elseif type(confArgs.trace) == "table" then
+		for _,v in pairs(confArgs.trace) do
 			if type(v) == "string" then
 				AFB:servsync(_AFT.context, "monitor", "trace", { add = { request = "vverbose", event = "push_after", pattern = v.."/*" }})
 			end
 		end
 	end
 
-	if args.files and type(args.files) == 'table' then
-		for _,f in pairs(args.files) do
+	if confArgs.files and type(confArgs.files) == 'table' then
+		for _,f in pairs(confArgs.files) do
 			_AFT.setOutputFile(f)
 			readOneFile(f)
 			process_tests()
@@ -664,9 +682,9 @@ function _launch_test(context, args)
 			_AFT.afterAll = nil
 			_AFT.tests_list = {}
 		end
-	elseif type(args.files) == 'string' then
-		_AFT.setOutputFile(args.files)
-		readOneFile(args.files)
+	elseif type(confArgs.files) == 'string' then
+		_AFT.setOutputFile(confArgs.files)
+		readOneFile(confArgs.files)
 		process_tests()
 	end
 
