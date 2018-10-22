@@ -38,11 +38,12 @@ cleanNexit() {
 
 function usage() {
 	cat >&2 << EOF
-Usage: $0 <binding-wgt-rootdir> <test-wgt-rootdir> [mode] [timeout]
+Usage: $0 <binding-wgt-rootdir> <test-wgt-rootdir> [-m|--mode <SOLO|SERVICE>] [-t|--timeout <X>] [-l|--lavaoutput]
 binding-wgt-rootdir: path to the test wgt file
 test-wgt-rootdir: path to the test folder file
-mode: SOLO (1 binder) or SERVICE (2 binders)
-timeout: default 3 seconds
+-m|--mode: SOLO (1 binder) or SERVICE (2 binders) (Default: SOLO)
+-t|--timeout: timeout in second. (Default 3 seconds)
+-l|--lavaoutput: Flags indicating the binding to add Lava special test markers.
 EOF
 }
 
@@ -51,6 +52,34 @@ AFBTEST="$(pkg-config --variable libdir afb-test)/aft.so"
 PORT=1234
 PORTSERVICE=$((PORT+1))
 TOKEN=
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+	-l|--lavaoutput)
+	LAVAOUTPUT="TRUE"
+	shift # past argument
+	;;
+	-m|--mode)
+	MODE="$2"
+	shift # past argument
+	shift # past value
+	;;
+	-t|--timeout)
+	TIMEOUT="$2"
+	shift # past argument
+	shift # past value
+	;;
+	*)
+	POSITIONAL+=("$1") # save it in an array for later
+	shift # past argument
+	;;
+esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
 
 if [ "$1" ] && [ "$2" ]
 then
@@ -62,19 +91,8 @@ else
 	cleanNexit 1
 fi
 
-if [ "$3" ]
-then
-	MODE="$3"
-else
-	MODE="SOLO"
-fi
-
-if [ "$4" ]
-then
-	TIMEOUT=$4
-else
-	TIMEOUT=3
-fi
+[ -z "$MODE" ] && MODE="SOLO"
+[ -z "$TIMEOUT" ] && TIMEOUT=3
 
 TESTCFGFILE=$(find "${TESTPACKAGEDIR}" -name "aft-*.json" -print | head -n1)
 TESTAPINAME=$(grep '\"api\"' "${TESTCFGFILE}" | cut -d'"' -f4)
@@ -116,7 +134,12 @@ LOGFILETEST="test.log"
 
 testVerbLength=${#testVerb[@]}
 for (( idx=0; idx<testVerbLength; idx++ )) do
-	testVerbCalls="--call=${TESTAPINAME}/${testVerb[$idx]}:'{}' ${testVerbCalls}"
+	if [ "${LAVAOUTPUT}" ]
+	then
+		testVerbCalls="--call=${TESTAPINAME}/${testVerb[$idx]}:{\"lavaOutput\":true} ${testVerbCalls}"
+	else
+		testVerbCalls="--call=${TESTAPINAME}/${testVerb[$idx]}:{} ${testVerbCalls}"
+	fi
 done
 
 if [ ${MODE} = "SOLO" ]
