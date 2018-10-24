@@ -63,6 +63,10 @@ function _AFT.setOutputFile(filePath)
 
 	io.output(file)
 	io.stdout = file
+
+	if _AFT.lavaOutput then
+		print("<LAVA_SIGNAL_TESTSET START "..fileName..">")
+	end
 end
 
 function _AFT.exitAtEnd(code)
@@ -430,8 +434,8 @@ function _AFT.describe(testName, testFunction, setUp, tearDown)
 				end
 			end
 
-			print('<LAVA_SIGNAL_TESTCASE TEST_CASE_ID='..testName..' RESULT='..result..'>')
 			print('<LAVA_SIGNAL_ENDTC '..testName..'>')
+			print('<LAVA_SIGNAL_TESTCASE TEST_CASE_ID='..testName..' RESULT='..result..'>')
 		end
 	end
 
@@ -681,6 +685,9 @@ function _launch_test(context, confArgs, queryArgs)
 			_AFT.beforeAll = nil
 			_AFT.afterAll = nil
 			_AFT.tests_list = {}
+			if _AFT.lavaOutput then
+				print("<LAVA_SIGNAL_TESTSET STOP>")
+			end
 		end
 	elseif type(confArgs.files) == 'string' then
 		_AFT.setOutputFile(confArgs.files)
