@@ -25,8 +25,6 @@
 #include "mapis.h"
 
 #define CONTROL_PREFIX "aft"
-// default api to print log when apihandle not avaliable
-afb_api_t AFB_default;
 
 static CtlConfigT *CtrlLoadConfigJson(afb_api_t apiHandle, json_object *configJ);
 static CtlConfigT *CtrlLoadConfigFile(afb_api_t apiHandle, const char *configPath);
@@ -106,9 +104,6 @@ static int CtrlLoadStaticVerbs(afb_api_t apiHandle, afb_verb_t *verbs) {
 };
 
 static int CtrlInitOneApi(afb_api_t apiHandle) {
-	// Hugely hack to make all V2 AFB_DEBUG to work in fileutils
-	AFB_default = apiHandle;
-
 	CtlConfigT *ctrlConfig = afb_api_get_userdata(apiHandle);
 
 	return CtlConfigExec(apiHandle, ctrlConfig);
@@ -194,7 +189,6 @@ int afbBindingEntry(afb_api_t apiHandle) {
 	char *dirList, *afTestRootDir, *path;
 	const char *envDirList = NULL, *configPath = NULL, *bindingRootDir = NULL;
 	json_object *settings = afb_api_settings(apiHandle), *bpath = NULL;
-	AFB_default = apiHandle;
 
 	AFB_API_DEBUG(apiHandle, "Controller in afbBindingEntry");
 
