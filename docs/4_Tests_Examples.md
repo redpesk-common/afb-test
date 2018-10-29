@@ -51,7 +51,7 @@ The example will run some basics tests on API verb calls and events received.
     _AFT.testEvtReceived("testEvent", "hello/anEvent",300000)
     _AFT.testEvtReceived("testEventCb", "hello/anotherEvent",300000)
 
-    _AFT.testCustom("mytest", function()
+    _AFT.describe("myTestLabel", function()
       _AFT.assertEquals(false, false)
     end)
 ```
@@ -59,7 +59,6 @@ The example will run some basics tests on API verb calls and events received.
 ## aftTest.lua
 
 ```lua
-
 _AFT.setBeforeEach(function() print("~~~~~ Begin Test ~~~~~") end)
 _AFT.setAfterEach(function() print("~~~~~ End Test ~~~~~") end)
 
@@ -74,10 +73,10 @@ _AFT.describe("testAssertEquals", function() _AFT.assertEquals(false, false) end
                                   function() print("~~~~~ End Test Assert Equals ~~~~~") end)
 
 _AFT.describe("testAssertNotEquals", function()  _AFT.assertNotEquals(true,false) end)
-_AFT.describe("testAssertItemsEquals", function()	_AFT.assertItemsEquals({1,2,3},{3,1,2}) end)
-_AFT.describe("testAssertAlmostEquals", function()	_AFT.assertAlmostEquals(1.25 ,1.5,0.5) end)
-_AFT.describe("testAssertNotAlmostEquals", function()	_AFT.assertNotAlmostEquals(1.25,1.5,0.125) end)
-_AFT.describe("testAssertEvalToTrue", function()	_AFT.assertEvalToTrue(true) end)
+_AFT.describe("testAssertItemsEquals", function()  _AFT.assertItemsEquals({1,2,3},{3,1,2}) end)
+_AFT.describe("testAssertAlmostEquals", function()  _AFT.assertAlmostEquals(1.25 ,1.5,0.5) end)
+_AFT.describe("testAssertNotAlmostEquals", function()  _AFT.assertNotAlmostEquals(1.25,1.5,0.125) end)
+_AFT.describe("testAssertEvalToTrue", function()  _AFT.assertEvalToTrue(true) end)
 _AFT.describe("testAssertEvalToFalse", function()  _AFT.assertEvalToFalse(false) end)
 
 _AFT.describe("testAssertStrContains", function()  _AFT.assertStrContains("Hello I'm a string","string") end)
@@ -90,7 +89,7 @@ _AFT.describe("testAssertNotStrContains", function()  _AFT.assertNotStrContains(
 ...
 ...
 ...
-_AFT.describe("testAssertNotIsUserdata", function()	_AFT.assertNotIsUserdata(2) end)
+_AFT.describe("testAssertNotIsUserdata", function()  _AFT.assertNotIsUserdata(2) end)
 
 
 function _callback(responseJ) _AFT.assertStrContains(responseJ.response, "Some String") end
@@ -105,4 +104,4 @@ _AFT.describe("testAssertVerbCbError",function() _AFT.assertVerbCbError('hello',
 ```
 
 > **NOTE**: I suggest you to take this lua file example to make your own test
-> then read the following the chapter if needed to write more complicated tests.
+> then read the following chapter if needed to write more complex tests.
