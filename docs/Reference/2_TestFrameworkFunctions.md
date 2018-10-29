@@ -3,10 +3,10 @@
 * **_AFT.addEventToMonitor(eventName, callback)**
 
     Add a binding event in the test framework to be able to assert its reception
-    . You'll need to add as much as events you expect to receive. You could also
-    specify a callback to test deeper that the event is as you want to. The
-    callback will happens after the assertion that it has been received so you
-    can work on data that the event eventually carry.
+    . You'll need to add as many events as you expect to receive. You could also
+    specify a callback to test in more details the event received, like the attached
+    data. The callback will happens after the assertion that it has been received so
+    you can work on data that the event eventually carry.
 
 * **_AFT.setJunitFile(filePath)**
 
@@ -15,29 +15,29 @@
 
 * **_AFT.setBeforeEach(function)**
 
-    Set the **_AFT.beforeEach()** function which is used to run the *function*
-    before each tests.
+    Set the **_AFT.beforeEach()** function which is used to run the specified
+    *function* before each tests.
 
 * **_AFT.setAfterEach(function)**
 
-    Set the **_AFT.afterEach()** function which is used to run the *function*
-    after each tests.
+    Set the **_AFT.afterEach()** function which is used to run the specified
+    *function* after each tests.
 
 * **_AFT.setBeforeAll(function)**
 
-    Set the **_AFT.beforeAll()** function which is used to run the *function*
-    before all tests. If the given function is successful it has to return 0
-    else it will return an error.
+    Set the **_AFT.beforeAll()** function which is used to run the specified
+    *function* before all tests. If the given function is successful it has
+    to return 0 else it will return an error.
 
 * **_AFT.setAfterAll(function)**
 
-    Set the **_AFT.afterAll()** function which is used to run the *function*
-    after all tests. If the given function is successful it has to return 0
-    else it will return an error.
+    Set the **_AFT.afterAll()** function which is used to run the specified
+    *function* after all tests. If the given function is successful it has
+    to return 0 else it will return an error.
 
 * **_AFT.describe(testName, testFunction, setUp, tearDown)**
 
-    Give a context to a custom test. *testFunction* will be given the name
+    Describe a manually written test. *testFunction* will be given the name
     provided by *testName* and will be tested.
 
     *setUp* and *tearDown* are functions that can be added to your context,

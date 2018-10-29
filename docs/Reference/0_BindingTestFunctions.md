@@ -4,42 +4,58 @@
 
     Simply test that the call of a verb successfully returns.
 
-    *setUp* and *tearDown* are functions that can be added to your context,
+    *setUp* and *tearDown* are functions that can be added to your test context,
     it works just like  **_AFT.beforeEach()** and **_AFT.afterEach()**,
     *setUp* will be ran before your *testFunction* and **_AFT.beforeEach()**
     (if set) functions, *tearDown* will be ran after your *testFunction* and
     **_AFT.afterEach()**  (if set) functions.
+
+    ```lua
+        _AFT.testVerbStatusSuccess('testPingSuccess','hello', 'ping', {})
+    ```
 
 * **_AFT.testVerbStatusError(testName, api, verb, args, setUp, tearDown)**
 
-    The inverse than above.
+    The inverse of above, test that a verb return does not succeed.
 
-    *setUp* and *tearDown* are functions that can be added to your context,
+    *setUp* and *tearDown* are functions that can be added to your test context,
     it works just like  **_AFT.beforeEach()** and **_AFT.afterEach()**,
     *setUp* will be ran before your *testFunction* and **_AFT.beforeEach()**
     (if set) functions, *tearDown* will be ran after your *testFunction* and
     **_AFT.afterEach()**  (if set) functions.
+
+    ```lua
+        _AFT.testVerbStatusSuccess('testPingError', 'hello', 'pingfail', {})
+    ```
 
 * **_AFT.testVerbResponseEquals(testName, api, verb, args, expectedResponse, setUp, tearDown)**
 
     Test that the call of a verb successfully returns and that verb's response
     is equals to the *expectedResponse*.
 
-    *setUp* and *tearDown* are functions that can be added to your context,
+    *setUp* and *tearDown* are functions that can be added to your test context,
     it works just like  **_AFT.beforeEach()** and **_AFT.afterEach()**, *setUp*
     will be ran before your *testFunction* and **_AFT.beforeEach()** (if set)
     functions, *tearDown* will be ran after your *testFunction* and
     **_AFT.afterEach()**  (if set) functions.
 
+    ```lua
+        _AFT.testVerbResponseEquals('testPingSuccess','hello', 'ping', {}, "Some String")
+    ```
+
 * **_AFT.testVerbResponseEqualsError(testName, api, verb, args, expectedResponse, setUp, tearDown)**
 
-    The inverse than above.
+    The inverse of above.
 
-    *setUp* and *tearDown* are functions that can be added to your context, it works
+    *setUp* and *tearDown* are functions that can be added to your test context, it works
     just like  **_AFT.beforeEach()** and **_AFT.afterEach()**, *setUp* will be ran
     before your *testFunction* and **_AFT.beforeEach()** (if set) functions,
     *tearDown* will be ran after your *testFunction* and **_AFT.afterEach()**  (if
     set) functions.
+
+    ```lua
+        _AFT.testVerbResponseEqualsError('testPingError', 'hello', 'pingfail', {}, "Ping Binder Daemon fails")
+    ```
 
 * **_AFT.testVerbCb(testName, api, verb, args, expectedResponse, callback, setUp, tearDown)**
 
@@ -49,21 +65,36 @@
 
     If you don't need to test the response simply specify an empty LUA table.
 
-    *setUp* and *tearDown* are functions that can be added to your context, it works
+    *setUp* and *tearDown* are functions that can be added to your test context, it works
     just like  **_AFT.beforeEach()** and **_AFT.afterEach()**, *setUp* will be ran
     before your *testFunction* and **_AFT.beforeEach()** (if set) functions,
     *tearDown* will be ran after your *testFunction* and **_AFT.afterEach()**  (if
     set) functions.
+
+    ```lua
+    function _callback(responseJ)
+        _AFT.assertStrContains(responseJ.response, "Some String")
+    end
+    _AFT.testVerbCb('testPingSuccess','hello', 'ping', {}, _callback)
+    ```
 
 * **_AFT.testVerbCbError(testName, api, verb, args, expectedResponse, callback, setUp, tearDown)**
 
     Should return success on failure.
 
-    *setUp* and *tearDown* are functions that can be added to your context, it works
+    *setUp* and *tearDown* are functions that can be added to your test context, it works
     just like  **_AFT.beforeEach()** and **_AFT.afterEach()**, *setUp* will be ran
     before your *testFunction* and **_AFT.beforeEach()** (if set) functions,
     *tearDown* will be ran after your *testFunction* and **_AFT.afterEach()**  (if
     set) functions.
+
+    ```lua
+    function _callbackError(responseJ)
+            _AFT.assertStrContains(responseJ.request.info, "Ping Binder Daemon fails")
+    end
+
+    _AFT.testVerbCbError('testPingError', 'hello', 'pingfail', {}, _callbackError)
+    ```
 
 * **_AFT.testEvtReceived(testName, eventName, timeout, setUp, tearDown)**
 
@@ -74,6 +105,10 @@
     Check if an event has been correctly received in time (timeout in µs). An event
     name use the application framework naming scheme: **api/event_name**.
 
+    ```lua
+        _AFT.testEvtReceived("testEvent", "hello/anEvent",300000)
+    ```
+
 * **_AFT.testEvtNotReceived(testName, eventName, timeout, setUp, tearDown)**
 
     Prior to be able to check that an event has not been received, you have to
@@ -83,18 +118,26 @@
     Check if an event has not been correctly received in time (timeout in µs). An
     event name use the application framework naming scheme: **api/event_name**.
 
+    ```lua
+        _AFT.testEvtNotReceived("testEventCb", "hello/anotherEvent",300000)
+    ```
+
 * **_AFT.testGrpEvtReceived(testName, eventGrp, timeout, setUp, tearDown)**
 
-    Prior to be able to check that a group of event (a table of event) has been
-    received, you have to register the event with the test framework using
+    Prior to be able to check that a group of events (a table of events) has been
+    received, you have to register the events with the test framework using
     **_AFT.addEventToMonitor** function.
 
     The table has to have this format:
     ```lua
-    eventGrp = {["api/event_name_1"]=1,["api/event_name_2"]=2,["api/event_name_3"]=5}
+    eventGrp = {["api/event_name_1"]=1, ["api/event_name_2"]=2, ["api/event_name_3"]=5}
     ```
-    As you can see, in the table, event names are table keys and the value stored are
+    As you can see in the table, event names are table keys and the value stored are
     the number of time that the events have to be received.
 
     Check if events has been correctly received in time (timeout in µs). An
     event name use the application framework naming scheme: **api/event_name**.
+
+    ```lua
+    _AFT.testEvtGrpReceived("TestEventGroupReceived",{["hello/anEvent"]=3,["hello/anotherEvent"]=1}, 300000)
+    ```

@@ -6,25 +6,46 @@
     that values like 0,"",1.17 succeed in this assertion. If provided, extra_msg
     is a string which will be printed along with the failure message.
 
+    ```lua
+    _AFT.assertEvalToTrue(3 == 1+2)
+    ```
+
 * **_AFT.assertEvalToFalse(Value)**
 
-    Assert that a given value eval to *false*. Lua coercion rules are applied so
+    Assert that a given value evals to *false*. Lua coercion rules are applied so
     that *nil* and *false* succeed in this assertion. If provided, extra_msg is a
     string which will be printed along with the failure message.
 
+    ```lua
+    _AFT.assertEvalToFalse(3 == 2)
+    ```
+
 * **_AFT.assertIsTrue(value)**
 
-    Assert that a given value compares to true. Lua coercion rules are applied so
+    Assert that a given value evals to true. Lua coercion rules are applied so
     that values like 0, "", 1.17 all compare to true.
+
+    ```lua
+    _AFT.assertIsTrue(3 == 1+2)
+    ```
 
 * **_AFT.assertIsFalse(value)**
 
-    Assert that a given value compares to false. Lua coercion rules are applied so
+    Assert that a given value evals to false. Lua coercion rules are applied so
     that only nil and false all compare to false.
+
+    ```lua
+    _AFT.assertIsFalse(3 == 2)
+    ```
 
 * **_AFT.assertIsNil(value)**
 
-    Assert that a given value is nil .
+    Assert that a given value is nil.
+
+    ```lua
+    var = nil
+    _AFT.assertIsNil(var)
+    ```
 
 * **_AFT.assertNotIsNil(value)**
 
@@ -46,10 +67,10 @@
     s2='to'..'to'
     t1={1,2}
     t2={1,2}
-    luaunit.assertIs(s1,s1) -- ok
-    luaunit.assertIs(s1,s2) -- ok
-    luaunit.assertIs(t1,t1) -- ok
-    luaunit.assertIs(t1,t2) -- fail`
+    _AFT.assertIs(s1,s1) -- ok
+    _AFT.assertIs(s1,s2) -- ok
+    _AFT.assertIs(t1,t1) -- ok
+    _AFT.assertIs(t1,t2) -- fail`
     ```
 
 * **_AFT.assertNotIs(actual, expected)**

@@ -6,16 +6,17 @@
 
 * **_AFT.assertVerbStatusError(api, verb, args)**
 
-    The inverse than above.
+    The inverse of above. Expects that the verbs fails.
 
 * **_AFT.assertVerbResponseEquals(api, verb, args, expectedResponse)**
 
     Test that the call of a verb successfully returns and that verb's response
-    is equals to the *expectedResponse*.
+    is equal to the *expectedResponse*.
 
 * **_AFT.assertVerbResponseEqualsError(api, verb, args, expectedResponse)**
 
-    The inverse than above.
+    The inverse of above. Expect an error on the verb call either on the verb or on the expected
+    response.
 
 * **_AFT.assertVerbCb(api, verb, args, expectedResponse, callback)**
 
@@ -24,6 +25,16 @@
     content mainly).
 
     If you don't need to test the response simply specify an empty LUA table.
+
+    ```lua
+    function _callback(responseJ)
+        _AFT.assertStrContains(responseJ.response, "Some String")
+    end
+
+    _AFT.describe("myTestLabel", function()
+      _AFT.testVerbCb('testPingSuccess','hello', 'ping', {}, _callback)
+    end)
+    ```
 
 * **_AFT.assertVerbCbError(api, verb, args, expectedResponse, callback)**
 
@@ -35,7 +46,7 @@
     register the event with the test framework using **_AFT.addEventToMonitor**
     function.
 
-    Check if an event has been correctly received in time (timeout in µs).
+    Check if an event has been correctly received in timeout specified (timeout in µs).
     An event name use the application framework naming scheme: **api/event_name**.
 
 * **_AFT.assertEvtNotReceived(eventName, timeout)**
@@ -49,8 +60,8 @@
 
 * **_AFT.assertGrpEvtReceived(eventGrp, timeout)**
 
-    Prior to be able to check that a group of event (a table of event) has been
-    received, you have to register the event with the test framework using
+    Prior to be able to check that a group of events (a table of event) has been
+    received, you have to register the events with the test framework using
     **_AFT.addEventToMonitor** function.
 
     The table has to have this format:
@@ -60,5 +71,5 @@
     As you can see, in the table, event names are table keys and the value stored are
     the number of time that the events have to be received.
 
-    Check if events has been correctly received in time (timeout in µs).
+    Check if events has been correctly received in timeout specified (timeout in µs).
     An event name use the application framework naming scheme: **api/event_name**.

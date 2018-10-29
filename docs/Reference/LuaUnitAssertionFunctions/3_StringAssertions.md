@@ -27,7 +27,7 @@ Assertions related to string and patterns.
     Assert that a string does not contain the given substring, irrespective of
     the case.
 
-    Not that unlike assertNotStrcontains(), you can not search for a pattern.
+    Note that unlike assertNotStrcontains(), you can not search for a pattern.
 
 * **_AFT.assertStrMatches(str, pattern[, start[, final]])**
 

@@ -1,7 +1,7 @@
 # Scientific assertions
 
 >**Note**
->If you need to deal with value minus zero, be very careful because Lua versions
+>If you need to deal with value *minus zero* (-0), be very careful because Lua versions
 are inconsistent on how they treat the >syntax -0 : it creates either a plus
 zero or a minus zero. Multiplying or dividing 0 by -1 also yields inconsistent >
 results. The reliable way to create the -0 value is : minusZero = -1 / (1/0).
