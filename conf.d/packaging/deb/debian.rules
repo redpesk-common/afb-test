@@ -33,7 +33,7 @@ build-stamp: configure-stamp
 	mkdir -p build
 	export PKG_CONFIG_PATH=/opt/AGL/lib/$(DEB_HOST_MULTIARCH)/pkgconfig
 	cd build && \
-	cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/AGL -DCMAKE_BUILD_TYPE=DEBUG .. && \
+	cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/AGL -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_INSTALL_LIBDIR:PATH=lib/$(DEB_HOST_MULTIARCH) .. && \
 	$(MAKE)
 	touch build-stamp
 
