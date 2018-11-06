@@ -19,9 +19,9 @@ Summary:        AGL app-afb-test
 Group:          Development/Libraries/C and C++
 Url:            https://gerrit.automotivelinux.org/gerrit/#/admin/projects/apps/app-afb-test
 Source:         app-afb-test-%{version}.tar.gz
-Patch0:         project_version.patch
 BuildRequires:  pkgconfig(lua) >= 5.3
 BuildRequires:  cmake
+BuildRequires:  agl-cmake-apps-module
 BuildRequires:  gcc-c++
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(afb-daemon)
@@ -30,8 +30,7 @@ BuildRequires:  pkgconfig(libsystemd) >= 222
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
 %description
-This is a migration of former app-templates git submodule which let you ease the
-development of apps and widget building.
+afb-test is a test framework made to test other binding.
 
 %package devel
 Group:          Development/Libraries/C and C++
@@ -39,12 +38,10 @@ Requires:       %{name} = %{version}
 Provides:       pkgconfig(%{name}) = %{version}
 Summary:        AGL app-afb-test-devel
 %description devel
-This is a migration of former app-templates git submodule which let you ease the
-development of apps and widget building.
+afb-test is a test framework made to test other binding.
 
 %prep
 %setup -q -n app-afb-test-%{version}
-%patch0 -p1
 
 %build
 export PKG_CONFIG_PATH=%{_libdir}/pkgconfig
