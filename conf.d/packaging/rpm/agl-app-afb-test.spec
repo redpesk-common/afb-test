@@ -47,7 +47,7 @@ afb-test is a test framework made to test other binding.
 export PKG_CONFIG_PATH=%{_libdir}/pkgconfig
 [ ! -d build ] && mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=DEBUG ..
+cmake -DCMAKE_BUILD_TYPE=DEBUG -DVERSION=%{version} ..
 %__make %{?_smp_mflags}
 
 %install
