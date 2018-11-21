@@ -26,7 +26,12 @@ cleanNexit() {
 	then
 		[ -f "${LOGFILESERVICE}" ] && cat "${LOGFILESERVICE}"
 		[ -f "${LOGFILETEST}" ] && cat "${LOGFILETEST}"
-		echo "Error: Test launch failed. Code: $1"
+		if [[ $1 -eq 124 ]] || [[ $1 -eq 137 ]]
+		then
+			echo -e "Error: Test timed out. Try to use '-t' options to increase the timeout.\nError: Exit Code: $1"
+		else
+			echo -e "Error: Test launch failed.\nError: Exit Code: $1"
+		fi
 	else
 		find "${TESTPACKAGEDIR}" -maxdepth 1 -name '*.tap' -exec cat {} \;
 		find "${TESTPACKAGEDIR}" -maxdepth 1 -name '*.txt' -exec cat {} \;
