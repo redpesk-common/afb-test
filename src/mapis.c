@@ -33,6 +33,8 @@ static int LoadOneMapi(void *data, afb_api_t apiHandle) {
 	struct mapisHandleT *mapisHandle = (struct mapisHandleT*)data;
 	CtlConfigT *ctrlConfig = afb_api_get_userdata(mapisHandle->mainApiHandle);
 
+	afb_api_set_userdata(apiHandle, ctrlConfig);
+
 	if(PluginConfig(apiHandle, mapisHandle->section, mapisHandle->mapiJ)) {
 		AFB_API_ERROR(apiHandle, "Problem loading the plugin as an API for %s, see log message above", json_object_get_string(mapisHandle->mapiJ));
 		return -1;
