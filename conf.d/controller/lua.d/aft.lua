@@ -338,7 +338,7 @@ local function assertVerbCallParameters(src, api, verb, args)
 	_AFT.assertIsUserdata(src, "Source must be an opaque userdata pointer which will be passed to the binder")
 	_AFT.assertIsString(api, "API and Verb must be string")
 	_AFT.assertIsString(verb, "API and Verb must be string")
-	_AFT.assertIsTable(args, "Arguments must use LUA Table (event empty)")
+	_AFT.assertIsTrue( (type(args) == "table" or type(args) == "string"), "Arguments must use LUA Table or string (even empty)")
 end
 
 function _AFT.callVerb(api, verb, args)
