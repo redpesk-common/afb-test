@@ -666,11 +666,11 @@ function _launch_test(context, confArgs, queryArgs)
 	-- lua test files to execute in the Framework.
 	AFB:servsync(_AFT.context, "monitor", "set", { verbosity = "debug" })
 	if type(confArgs.trace) == "string" then
-		AFB:servsync(_AFT.context, "monitor", "trace", { add = { request = "vverbose", event = "push_after", pattern = confArgs.trace.."/*" }})
+		AFB:servsync(_AFT.context, "monitor", "trace", { add = {event = "push_after", pattern = confArgs.trace.."/*" }})
 	elseif type(confArgs.trace) == "table" then
 		for _,v in pairs(confArgs.trace) do
 			if type(v) == "string" then
-				AFB:servsync(_AFT.context, "monitor", "trace", { add = { request = "vverbose", event = "push_after", pattern = v.."/*" }})
+				AFB:servsync(_AFT.context, "monitor", "trace", { add = { event = "push_after", pattern = v.."/*" }})
 			end
 		end
 	end
