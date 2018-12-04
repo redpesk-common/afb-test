@@ -18,8 +18,10 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <string.h>
 #include <time.h>
+#include <pthread.h>
+#include <string.h>
+#include <systemd/sd-event.h>
 
 #include "aft.h"
 #include "mapis.h"
@@ -29,6 +31,9 @@
 static CtlConfigT *CtrlLoadConfigJson(afb_api_t apiHandle, json_object *configJ);
 static CtlConfigT *CtrlLoadConfigFile(afb_api_t apiHandle, const char *configPath);
 static int CtrlCreateApi(afb_api_t apiHandle, CtlConfigT *ctrlConfig);
+static pthread_mutex_t memo_lock;
+static afb_req_t memo_sync = NULL;
+static struct sd_event_source *timersrc = NULL;
 
 // Config Section definition
 static CtlSectionT ctrlSections[] = {
@@ -79,8 +84,59 @@ static void ctrlapi_load(afb_req_t request) {
 
 static void ctrlapi_exit(afb_req_t request) {
 	AFB_REQ_NOTICE(request, "Exiting...");
+	pthread_mutex_destroy(&memo_lock);
 	afb_req_success(request, NULL, NULL);
 	exit(0);
+}
+
+static int timeoutCB(struct sd_event_source *s, uint64_t us, void *ud)
+{
+	if (memo_sync)
+		afb_req_reply(memo_sync, NULL, "timeout", NULL);
+	memo_sync = NULL;
+	timersrc = NULL;
+
+	return 0;
+}
+/**
+ * @brief A verb to call synchronously that will end when a timeout expires or
+ * when a call with a 'stop' order given in the arguments.
+ *
+ * @param request: the AFB request object
+ */
+static void ctrlapi_sync(afb_req_t request) {
+	struct json_object *obj, *val;
+	uint64_t to, usec;
+
+	AFB_REQ_NOTICE(request, "Syncing...");
+
+	pthread_mutex_lock(&memo_lock);
+	obj = afb_req_json(request);
+	if (json_object_object_get_ex(obj, "start", &val)) {
+		to = json_object_get_int(val);
+		if (memo_sync)
+			afb_req_reply(request, NULL, "Bad-State", "There is an already ongoing waiting request.");
+		else {
+			sd_event_now(afb_api_get_event_loop(afb_req_get_api(request)), CLOCK_MONOTONIC, &usec);
+			usec = to + usec;
+			sd_event_add_time(afb_api_get_event_loop(afb_req_get_api(request)), &timersrc, CLOCK_MONOTONIC, usec, 0, timeoutCB, NULL);
+			memo_sync = afb_req_addref(request);
+		}
+	} else if (json_object_object_get_ex(obj, "stop", &val)) {
+		if (!memo_sync)
+			afb_req_reply(request, NULL, "Bad-State", "There isn't any ongoing waiting request.");
+		else {
+			afb_req_reply(memo_sync, json_object_get(val), NULL, NULL);
+			afb_req_unref(memo_sync);
+			sd_event_source_unref(timersrc);
+			memo_sync = NULL;
+			timersrc = NULL;
+			afb_req_reply(request, NULL, NULL, NULL);
+		}
+	} else
+		afb_req_reply(request, NULL, "Invalid", "No 'start' nor 'stop' order provided.");
+
+	pthread_mutex_unlock(&memo_lock);
 }
 
 static afb_verb_t CtrlApiVerbs[] = {
@@ -88,6 +144,7 @@ static afb_verb_t CtrlApiVerbs[] = {
 	{.verb = "ping", .callback = ctrlapi_ping, .info = "ping test for API"},
 	{.verb = "load", .callback = ctrlapi_load, .info = "load a API meant to launch test for a binding"},
 	{.verb = "exit", .callback = ctrlapi_exit, .info = "Exit test"},
+	{.verb = "sync", .callback = ctrlapi_sync, .info = "Manually make a sync for something using a synchronous subcall"},
 	{.verb = NULL} /* marker for end of the array */
 };
 
@@ -111,6 +168,11 @@ static int CtrlInitOneApi(afb_api_t apiHandle) {
 
 static int CtrlLoadOneApi(void *cbdata, afb_api_t apiHandle) {
 	CtlConfigT *ctrlConfig = (CtlConfigT *)cbdata;
+
+	if(pthread_mutex_init(&memo_lock, NULL)) {
+		AFB_API_ERROR(apiHandle, "Fail to initialize");
+		return -1;
+	}
 
 	// save closure as api's data context
 	afb_api_set_userdata(apiHandle, ctrlConfig);
@@ -178,7 +240,7 @@ static int CtrlCreateApi(afb_api_t apiHandle, CtlConfigT *ctrlConfig) {
 	wrap_json_object_add(ctrlConfig->configJ, resourcesJ);
 	wrap_json_object_add(ctrlConfig->configJ, eventsJ);
 
-	if(! afb_api_new_api(apiHandle, ctrlConfig->api, ctrlConfig->info, 1, CtrlLoadOneApi, ctrlConfig))
+	if(! afb_api_new_api(apiHandle, ctrlConfig->api, ctrlConfig->info, 0, CtrlLoadOneApi, ctrlConfig))
 		return ERROR;
 
 	return 0;
