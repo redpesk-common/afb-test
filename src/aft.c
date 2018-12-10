@@ -251,6 +251,7 @@ int afbBindingEntry(afb_api_t apiHandle) {
 	char *dirList, *afTestRootDir, *path;
 	const char *envDirList = NULL, *configPath = NULL, *bindingRootDir = NULL;
 	json_object *settings = afb_api_settings(apiHandle), *bpath = NULL;
+	CtlConfigT *ctrlConfig = NULL;
 
 	AFB_API_DEBUG(apiHandle, "Controller in afbBindingEntry");
 
@@ -290,6 +291,8 @@ int afbBindingEntry(afb_api_t apiHandle) {
 		return ERROR;
 	}
 
+	ctrlConfig = CtrlLoadConfigFile(apiHandle, configPath);
 	free(afTestRootDir);
-	return CtrlCreateApi(apiHandle, CtrlLoadConfigFile(apiHandle, configPath));
+	free(dirList);
+	return CtrlCreateApi(apiHandle, ctrlConfig);
 }
