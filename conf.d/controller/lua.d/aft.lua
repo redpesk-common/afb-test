@@ -23,6 +23,7 @@ lu.LuaUnit:setOutputType('TAP')
 
 _AFT = {
 	exit = {0, code},
+	apiname = nil,
 	context = _ctx,
 	bindingRootDir = nil,
 	tests_list = {},
@@ -32,6 +33,7 @@ _AFT = {
 	afterEach = nil,
 	beforeAll = nil,
 	afterAll = nil,
+	waiting = false,
 	lavaOutput = false,
 }
 
@@ -150,12 +152,26 @@ function _AFT.bindingEventHandler(eventObj, uid)
 	end
 
 	if type(_AFT.monitored_events[eventName]) == 'table' then
+		local stopSync = true
 		if eventListeners then
 			_AFT.monitored_events[eventName].eventListeners = eventListeners
 		end
 
 		_AFT.incrementCount(_AFT.monitored_events[eventName])
 		_AFT.registerData(_AFT.monitored_events[eventName], data)
+
+		for name,value in pairs(_AFT.monitored_events) do
+			if (_AFT.monitored_events[name].expected and
+			   _AFT.monitored_events[name].receivedCount < _AFT.monitored_events[name].expected)
+			then
+				stopSync = false
+			end
+		end
+
+		if stopSync == true and _AFT.waiting == true then
+			AFB:servsync(_AFT.context, _AFT.apiname, "sync", { stop = 1 })
+			_AFT.waiting = false
+		end
 	end
 end
 
@@ -176,55 +192,38 @@ function _AFT.lockWait(eventName, timeout)
 		return 0
 	end
 
-	local count = 0
-	if _AFT.monitored_events[eventName].receivedCount and timeout then
-		count = _AFT.monitored_events[eventName].receivedCount
-	end
+	_AFT.waiting = true
+	local err,responseJ = AFB:servsync(_AFT.context, _AFT.apiname, "sync", { start = timeout})
 
-	while timeout > 0 do
-		timeout = AFB:lockwait(_AFT.context, timeout)
-		AFB:lockwait(_AFT.context, 0) --without it _evt_catcher_ cannot received event
-
-		if _AFT.monitored_events[eventName].receivedCount == count + 1 then
-		return 1
-		end
+	if err then
+		return 0
 	end
-	return 0
+	return 1
 end
 
 function _AFT.lockWaitGroup(eventGroup, timeout)
+	local count = 0
 	if type(eventGroup) ~= "table" then
 		print("Error: wrong argument given to wait a group of events. 1st argument should be a table")
 		return 0
 	end
 
-	-- Copy and compute the expected as it may have already received events
-	-- you should add the expected count to the actual received counter to be
-	-- accurate.
-	local eventGroupCpy = {}
 	for event,expectedCount in pairs(eventGroup) do
-		eventGroupCpy[event] = expectedCount + _AFT.monitored_events[event].receivedCount
+		_AFT.monitored_events[event].expected = expectedCount + _AFT.monitored_events[event].receivedCount
 	end
 
-	local total = 0
-	local matched = nil
-	while timeout > 0 do
-		timeout = AFB:lockwait(_AFT.context, timeout)
-		AFB:lockwait(_AFT.context, 0) --without it _evt_catcher_ cannot received event
+	_AFT.waiting = true
+	local err, responseJ = AFB:servsync(_AFT.context, _AFT.apiname, "sync", { start = timeout })
 
-		for name,expectedCount in pairs(eventGroupCpy) do
-			if _AFT.monitored_events[name].receivedCount >= expectedCount then
-				total = total + _AFT.monitored_events[name].receivedCount
-				matched = name
-			end
-		end
-		if matched then
-			eventGroupCpy[matched] = nil
-			matched = nil
-		end
-		if table_size(eventGroupCpy) == 0 then return total end
+	if err then
+		return 0
 	end
-	return 0
+
+	for event in pairs(eventGroup) do
+		count = count + _AFT.monitored_events[event].receivedCount
+	end
+
+	return count
 end
 
 --[[
@@ -232,51 +231,53 @@ end
 ]]
 
 function _AFT.assertEvtGrpNotReceived(eventGroup, timeout)
-		local count = 0
-		local expected = 0
+		local totalCount = 0
+		local totalExpected = 0
 		local eventName = ""
-
-		if timeout then
-			count = _AFT.lockWaitGroup(eventGroup, timeout)
-		else
-			for event in pairs(eventGroup) do
-				count = count + _AFT.monitored_events[event].receivedCount
-			end
-		end
 
 		for event,expectedCount in pairs(eventGroup) do
 			eventName = eventName .. " " .. event
-			expected = expected + expectedCount
+			totalExpected = totalExpected + expectedCount
 		end
-		_AFT.assertIsTrue(count <= expected, "One of the following events has been received: '".. eventName .."' but it shouldn't")
+
+		if timeout then
+			totalCount = _AFT.lockWaitGroup(eventGroup, timeout)
+		else
+			for event in pairs(eventGroup) do
+				totalCount = totalCount + _AFT.monitored_events[event].receivedCount
+			end
+		end
+
+		_AFT.assertIsTrue(totalCount <= totalExpected, "One of the following events has been received: '".. eventName .."' but it shouldn't")
 
 		for event in pairs(eventGroup) do
 			_AFT.triggerEvtCallback(event)
+			_AFT.monitored_events[event] = nil
 		end
 	end
 
 function _AFT.assertEvtGrpReceived(eventGroup, timeout)
-	local count = 0
-	local expected = 0
+	local totalCount = 0
+	local totalExpected = 0
 	local eventName = ""
-
-	if timeout then
-		count = _AFT.lockWaitGroup(eventGroup, timeout)
-	else
-		for event in pairs(eventGroup) do
-			count = count + _AFT.monitored_events[event].receivedCount
-		end
-	end
 
 	for event,expectedCount in pairs(eventGroup) do
 		eventName = eventName .. " " .. event
-		expected = expected + expectedCount
+		totalExpected = totalExpected + expectedCount
 	end
 
-	_AFT.assertIsTrue(count >= expected, "None or one of the following events: '".. eventName .."' has not been received")
+	if timeout then
+		totalCount = _AFT.lockWaitGroup(eventGroup, timeout)
+	else
+		for event in pairs(eventGroup) do
+			totalCount = totalCount + _AFT.monitored_events[event].receivedCount
+		end
+	end
+	_AFT.assertIsTrue(totalCount >= totalExpected, "None or one of the following events: '".. eventName .."' has not been received")
 
 	for event in pairs(eventGroup) do
 		_AFT.triggerEvtCallback(event)
+		_AFT.monitored_events[event] = nil
 	end
 end
 
@@ -289,6 +290,7 @@ function _AFT.assertEvtNotReceived(eventName, timeout)
 		_AFT.assertIsTrue(count == 0, "Event '".. eventName .."' received but it shouldn't")
 
 		_AFT.triggerEvtCallback(eventName)
+		_AFT.monitored_events[eventName] = nil
 	end
 
 function _AFT.assertEvtReceived(eventName, timeout)
@@ -300,6 +302,7 @@ function _AFT.assertEvtReceived(eventName, timeout)
 	_AFT.assertIsTrue(count > 0, "No event '".. eventName .."' received")
 
 	_AFT.triggerEvtCallback(eventName)
+	_AFT.monitored_events[eventName] = nil
 end
 
 function _AFT.testEvtNotReceived(testName, eventName, timeout, setUp, tearDown)
@@ -658,13 +661,13 @@ end
 function _launch_test(context, confArgs, queryArgs)
 	_AFT.context = context
 	_AFT.bindingRootDir = AFB:getrootdir(_AFT.context)
+	_AFT.apiname = AFB:getapiname(_AFT.context)
 
 	-- Enable the lava additionals output markers
 	if queryArgs and queryArgs.lavaOutput then _AFT.lavaOutput = queryArgs.lavaOutput end
 
 	-- Prepare the tests execution configuring the monitoring and loading
 	-- lua test files to execute in the Framework.
-	AFB:servsync(_AFT.context, "monitor", "set", { verbosity = "debug" })
 	if type(confArgs.trace) == "string" then
 		AFB:servsync(_AFT.context, "monitor", "trace", { add = {event = "push_after", pattern = confArgs.trace.."/*" }})
 	elseif type(confArgs.trace) == "table" then
