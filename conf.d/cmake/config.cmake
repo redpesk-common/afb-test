@@ -81,7 +81,6 @@ set(INSTALL_PREFIX /opt/AGL CACHE PATH "INSTALL PREFIX PATH")
 # Customize link option
 # -----------------------------
 #list(APPEND link_libraries -an-option)
-list(APPEND link_libraries afb-helpers)
 
 # Compilation options definition
 # Use CMake generator expressions to specify only for a specific language
