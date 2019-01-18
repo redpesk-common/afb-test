@@ -24,6 +24,7 @@
 #include <ctl-config.h>
 #include <filescan-utils.h>
 #include <wrap-json.h>
+#include <afb/afb-binding.h>
 
 #ifndef ERROR
   #define ERROR -1

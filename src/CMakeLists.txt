@@ -24,20 +24,9 @@ PROJECT_TARGET_ADD(aft)
     ADD_LIBRARY(${TARGET_NAME} MODULE ${TARGET_NAME}.c mapis.c)
 
     SET_TARGET_PROPERTIES(${TARGET_NAME} PROPERTIES
-	PREFIX ""
+        PREFIX ""
         LABELS "BINDING"
         OUTPUT_NAME ${TARGET_NAME}
-    )
-
-    TARGET_LINK_LIBRARIES(${TARGET_NAME}
-	    afb-helpers
-        ctl-utilities
-	    ${link_libraries}
-    )
-
-    # Define target includes for this target client
-    TARGET_INCLUDE_DIRECTORIES(${TARGET_NAME}
-        PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
     # Define target includes for this target client

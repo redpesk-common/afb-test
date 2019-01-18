@@ -71,6 +71,8 @@ set (PKG_REQUIRED_LIST
 	json-c
 	libsystemd>=222
 	afb-daemon>=4.0
+	appcontroller
+	afb-helpers
 )
 
 # Prefix path where will be installed the files
@@ -124,7 +126,7 @@ set(INSTALL_PREFIX /opt/AGL CACHE PATH "INSTALL PREFIX PATH")
 # -O2
 # CACHE STRING "Compilation flags for RELEASE build type.")
 
-set(CONTROL_SUPPORT_LUA 1)
+add_definitions(-DCONTROL_SUPPORT_LUA=1)
 add_definitions(-DLUA_GLOB_PATTERN="/var/?.lua\\\;")
 add_definitions(-DCONTROL_PLUGIN_PATH="./var:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/lib/plugins:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/var:${INSTALL_PREFIX}/${PROJECT_NAME}/lib/plugins:${INSTALL_PREFIX}/${PROJECT_NAME}/var:${CMAKE_BINARY_DIR}/package/lib/plugins:${CMAKE_BINARY_DIR}/package/var")
 add_definitions(-DCONTROL_CONFIG_PATH="./etc:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/etc:${INSTALL_PREFIX}/${PROJECT_NAME}/etc:${CMAKE_BINARY_DIR}/package/etc")
