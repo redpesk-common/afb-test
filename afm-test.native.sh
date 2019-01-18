@@ -64,6 +64,10 @@ do
 key="$1"
 
 case $key in
+	-d|--debug)
+	DEBUGOUTPUT="TRUE"
+	shift # past argument
+	;;
 	-l|--lavaoutput)
 	LAVAOUTPUT="TRUE"
 	shift # past argument
@@ -85,6 +89,11 @@ case $key in
 esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
+
+if [ "${DEBUGOUTPUT}" = "TRUE" ]
+then
+	set -x
+fi
 
 if [ "$1" ] && [ "$2" ]
 then
