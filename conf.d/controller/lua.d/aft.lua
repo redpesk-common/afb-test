@@ -135,55 +135,25 @@ function _AFT.triggerEvtCallback(eventName)
 	end
 end
 
-function _AFT.bindingEventHandler(eventObj, uid)
-	local eventName = nil
-	local eventListeners = nil
-	local data = nil
-
-	if uid then
-		eventName = uid
-		data = eventObj
-	elseif eventObj.event.name then
-		eventName = eventObj.event.name
-		eventListeners = eventObj.data.result
-		-- Remove from event to hold the bare event data and be able to assert it
-		eventObj.data.result = nil
-		data = eventObj.data.data
+function _AFT.bindingEventHandler(eventObj)
+	local eventName = eventObj.event.name
+	if eventObj.data.result then
+		_AFT.monitored_events[eventName].eventListeners = eventObj.data.result
 	end
 
-	if type(_AFT.monitored_events[eventName]) == 'table' then
-		local stopSync = true
-		if eventListeners then
-			_AFT.monitored_events[eventName].eventListeners = eventListeners
-		end
+	_AFT.incrementCount(_AFT.monitored_events[eventName])
+	_AFT.registerData(_AFT.monitored_events[eventName],
+			  eventObj.data.data)
 
-		_AFT.incrementCount(_AFT.monitored_events[eventName])
-		_AFT.registerData(_AFT.monitored_events[eventName], data)
-
-		for name,value in pairs(_AFT.monitored_events) do
-			if (_AFT.monitored_events[name].expected and
-			   _AFT.monitored_events[name].receivedCount < _AFT.monitored_events[name].expected)
-			then
-				stopSync = false
-			end
-		end
-
-		if stopSync == true and _AFT.waiting == true then
-			AFB:servsync(_AFT.context, _AFT.apiname, "sync", { stop = 1 })
-			_AFT.waiting = false
+	for name,value in pairs(_AFT.monitored_events) do
+		if (_AFT.monitored_events[name].expected and
+		    _AFT.monitored_events[name].receivedCount < _AFT.monitored_events[name].expected
+		   )
+		then
+			return true
 		end
 	end
-end
-
-function _evt_catcher_(source, action, eventObj)
-	local uid = AFB:getuid(source)
-	if uid == "monitor/trace" then
-		if eventObj.type == "event" then
-			_AFT.bindingEventHandler(eventObj)
-		end
-	--else
-	--	_AFT.bindingEventHandler(eventObj, uid)
-	end
+	return false
 end
 
 function _AFT.lockWait(eventName, timeout)
@@ -192,12 +162,18 @@ function _AFT.lockWait(eventName, timeout)
 		return 0
 	end
 
-	_AFT.waiting = true
 	local err,responseJ = AFB:servsync(_AFT.context, _AFT.apiname, "sync", { start = timeout})
 
-	if err then
+	if err or (not responseJ and not responseJ.response.event.name) then
 		return 0
 	end
+
+	_AFT.bindingEventHandler(responseJ.response)
+
+	if AFB:servsync(_AFT.context,  _AFT.apiname, "sync", {stop = true}) then
+		return 0
+	end
+
 	return 1
 end
 
@@ -212,10 +188,20 @@ function _AFT.lockWaitGroup(eventGroup, timeout)
 		_AFT.monitored_events[event].expected = expectedCount + _AFT.monitored_events[event].receivedCount
 	end
 
-	_AFT.waiting = true
+	local waiting = true
 	local err, responseJ = AFB:servsync(_AFT.context, _AFT.apiname, "sync", { start = timeout })
+	while waiting do
+		if err or (not responseJ and not responseJ.response.event.name) then
+			return 0
+		end
 
-	if err then
+		waiting = _AFT.bindingEventHandler(responseJ.response)
+
+		if waiting == true then
+			err, responseJ = AFB:servsync(_AFT.context, _AFT.apiname, "sync", {continue = true})
+		end
+	end
+	if AFB:servsync(_AFT.context,  _AFT.apiname, "sync", {stop = true}) then
 		return 0
 	end
 
