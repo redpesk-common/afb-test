@@ -25,6 +25,8 @@ BuildRequires:  agl-cmake-apps-module
 BuildRequires:  gcc-c++
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(afb-daemon)
+BuildRequires:  pkgconfig(appcontroller)
+BuildRequires:  pkgconfig(afb-helpers)
 BuildRequires:  pkgconfig(libsystemd) >= 222
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
