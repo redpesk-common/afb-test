@@ -28,6 +28,7 @@ BuildRequires:  pkgconfig(afb-daemon)
 BuildRequires:  pkgconfig(appcontroller)
 BuildRequires:  pkgconfig(afb-helpers)
 BuildRequires:  pkgconfig(libsystemd) >= 222
+Requires:       jq
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 

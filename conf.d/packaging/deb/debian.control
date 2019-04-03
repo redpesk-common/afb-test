@@ -20,6 +20,7 @@ Homepage: https://gerrit.automotivelinux.org/gerrit/#/admin/projects/apps/app-af
 Package: agl-app-afb-test-bin
 Section: libs
 Architecture: any
+Depends: jq
 Description: afb-test is a test framework made to test other binding.
 
 Package: agl-app-afb-test-dev
