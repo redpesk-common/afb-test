@@ -2,7 +2,7 @@
 # -*- makefile -*-
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
-export VERSION=$(shell grep -E "^Version" ../*dsc | sed -r 's/^.*: (.*)-.*/\1/')
+export VERSION=$(shell grep -E "^Version" $(shell find .. -name BUILD -prune -type d -o -name *dsc -print | head -n1) | sed -r 's/^.*: (.*)-.*/\1/')
 
 %:
 	bash /etc/profile.d/agl-app-framework-binder.sh
