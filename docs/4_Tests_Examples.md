@@ -43,6 +43,8 @@ The example will run some basics tests on API verb calls and events received.
     _AFT.testVerbStatusSuccess('testEventSub', 'hello', 'eventsub', {tag = 'evt'})
     _AFT.testVerbStatusSuccess('testEventPush', 'hello', 'eventpush', {tag = 'evt', data = { key = 'weird others data', another_key = 123.456}})
 
+    _AFT.testVerbStatusSkipped('testEventSub', 'hello', 'eventsub', {tag = 'evt'})
+
     _AFT.testVerbStatusSuccess('testGenerateWarning', 'hello', 'verbose', {level = 4, message = 'My Warning message!'})
 
     _AFT.testEvtGrpReceived("TestEventGroupReceived",{"hello/anEvent","hello/anotherEvent"},300000)
@@ -96,6 +98,7 @@ function _callback(responseJ) _AFT.assertStrContains(responseJ.response, "Some S
 function _callbackError(responseJ) _AFT.assertStrContains(responseJ.request.info, "Ping Binder Daemon fails") end
 
 _AFT.describe("testAssertVerbStatusSuccess",function() _AFT.assertVerbStatusSuccess('hello', 'ping', {}) end)
+_AFT.describe("testAssertVerbStatusSkipped",function() _AFT.assertVerbStatusSkipped('hello', 'ping', {}) end)
 _AFT.describe("testAssertVerbResponseEquals",function() _AFT.assertVerbResponseEquals('hello', 'ping', {},"Some String") end)
 _AFT.describe("testAssertVerbCb",function() _AFT.assertVerbCb('hello', 'ping', {},_callback) end)
 _AFT.describe("testAssertVerbStatusError",function() _AFT.assertVerbStatusError('hello', 'pingfail', {}) end)

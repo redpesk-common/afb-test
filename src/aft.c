@@ -39,7 +39,8 @@ static void onTraceEvent(void *closure, const char *event, json_object *data, af
 	 */
 	pthread_mutex_lock(&memo_lock);
 	if(memo_sync) {
-		afb_req_reply(memo_sync, json_object_get(data), NULL, event);afb_req_unref(memo_sync);
+		afb_req_reply(memo_sync, json_object_get(data), NULL, event);
+		afb_req_unref(memo_sync);
 		memo_sync = NULL;
 	}
 	pthread_mutex_unlock(&memo_lock);

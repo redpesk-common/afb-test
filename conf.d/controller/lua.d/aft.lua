@@ -84,7 +84,7 @@ print = function(...)
 end
 
 --[[
-  Events listener and assertion functions to test correctness of received
+  Events listener and assertion functions to test corrqectness of received
   event data.
 
   Check are in 2 times. First you need to register the event that you want to
@@ -97,7 +97,7 @@ end
 ]]
 
 function _AFT.addEventToMonitor(eventName, callback)
-	_AFT.monitored_events[eventName] = { cb = callback, receivedCount = 0 }
+	_AFT.monitored_events[eventName] = { cb = callback, receivedCount = 0, eventListeners = 0 }
 end
 
 function _AFT.incrementCount(dict)
@@ -123,13 +123,15 @@ function _AFT.registerData(dict, eventData)
 end
 
 function _AFT.triggerEvtCallback(eventName)
-	if _AFT.monitored_events[eventName].cb then
-		if _AFT.monitored_events[eventName].data ~= nil then
-			local data_n = table_size(_AFT.monitored_events[eventName].data)
-			if _AFT.event_history == true then
-				_AFT.monitored_events[eventName].cb(eventName, _AFT.monitored_events[eventName].data[data_n], _AFT.monitored_events[eventName].data)
-			else
-				_AFT.monitored_events[eventName].cb(eventName, _AFT.monitored_events[eventName].data[data_n])
+	if _AFT.monitored_events[eventName] then
+		if _AFT.monitored_events[eventName].cb then
+			if _AFT.monitored_events[eventName].data ~= nil then
+				local data_n = table_size(_AFT.monitored_events[eventName].data)
+				if _AFT.event_history == true then
+					_AFT.monitored_events[eventName].cb(eventName, _AFT.monitored_events[eventName].data[data_n], _AFT.monitored_events[eventName].data)
+				else
+					_AFT.monitored_events[eventName].cb(eventName, _AFT.monitored_events[eventName].data[data_n])
+				end
 			end
 		end
 	end
@@ -137,18 +139,19 @@ end
 
 function _AFT.bindingEventHandler(eventObj)
 	local eventName = eventObj.event.name
-	if eventObj.data.result then
-		_AFT.monitored_events[eventName].eventListeners = eventObj.data.result
-	end
+	if _AFT.monitored_events[eventName] then
+		if eventObj.data.result then
+			_AFT.monitored_events[eventName].eventListeners = eventObj.data.result
+		end
+		_AFT.incrementCount(_AFT.monitored_events[eventName])
 
-	_AFT.incrementCount(_AFT.monitored_events[eventName])
-	_AFT.registerData(_AFT.monitored_events[eventName],
-			  eventObj.data.data)
+		_AFT.registerData(_AFT.monitored_events[eventName], eventObj.data.data)
+	end
 
 	for name,value in pairs(_AFT.monitored_events) do
 		if (_AFT.monitored_events[name].expected and
-		    _AFT.monitored_events[name].receivedCount < _AFT.monitored_events[name].expected
-		   )
+			_AFT.monitored_events[name].receivedCount <= _AFT.monitored_events[name].expected
+		)
 		then
 			return true
 		end
@@ -161,15 +164,18 @@ function _AFT.lockWait(eventName, timeout)
 		print("Error: wrong argument given to wait an event. 1st argument should be a string")
 		return 0
 	end
-
 	local err,responseJ = AFB:servsync(_AFT.context, _AFT.apiname, "sync", { start = timeout})
 
-	if err or (not responseJ and not responseJ.response.event.name) then
-		return 0
+	local waiting = true
+	while waiting do
+		if err or (not responseJ and not responseJ.response.event.name) then
+			return 0
+		end
+		waiting = _AFT.bindingEventHandler(responseJ.response)
+		if waiting == true then
+			err, responseJ = AFB:servsync(_AFT.context, _AFT.apiname, "sync", {continue = true})
+		end
 	end
-
-	_AFT.bindingEventHandler(responseJ.response)
-
 	if AFB:servsync(_AFT.context,  _AFT.apiname, "sync", {stop = true}) then
 		return 0
 	end
@@ -183,6 +189,9 @@ function _AFT.lockWaitGroup(eventGroup, timeout)
 		print("Error: wrong argument given to wait a group of events. 1st argument should be a table")
 		return 0
 	end
+	if timeout == 0 or timeout == nil then
+		timeout = 60000000
+	end
 
 	for event,expectedCount in pairs(eventGroup) do
 		_AFT.monitored_events[event].expected = expectedCount + _AFT.monitored_events[event].receivedCount
@@ -194,9 +203,7 @@ function _AFT.lockWaitGroup(eventGroup, timeout)
 		if err or (not responseJ and not responseJ.response.event.name) then
 			return 0
 		end
-
 		waiting = _AFT.bindingEventHandler(responseJ.response)
-
 		if waiting == true then
 			err, responseJ = AFB:servsync(_AFT.context, _AFT.apiname, "sync", {continue = true})
 		end
@@ -204,7 +211,6 @@ function _AFT.lockWaitGroup(eventGroup, timeout)
 	if AFB:servsync(_AFT.context,  _AFT.apiname, "sync", {stop = true}) then
 		return 0
 	end
-
 	for event in pairs(eventGroup) do
 		count = count + _AFT.monitored_events[event].receivedCount
 	end
@@ -217,32 +223,6 @@ end
 ]]
 
 function _AFT.assertEvtGrpNotReceived(eventGroup, timeout)
-		local totalCount = 0
-		local totalExpected = 0
-		local eventName = ""
-
-		for event,expectedCount in pairs(eventGroup) do
-			eventName = eventName .. " " .. event
-			totalExpected = totalExpected + expectedCount
-		end
-
-		if timeout then
-			totalCount = _AFT.lockWaitGroup(eventGroup, timeout)
-		else
-			for event in pairs(eventGroup) do
-				totalCount = totalCount + _AFT.monitored_events[event].receivedCount
-			end
-		end
-
-		_AFT.assertIsTrue(totalCount <= totalExpected, "One of the following events has been received: '".. eventName .."' but it shouldn't")
-
-		for event in pairs(eventGroup) do
-			_AFT.triggerEvtCallback(event)
-			_AFT.monitored_events[event] = nil
-		end
-	end
-
-function _AFT.assertEvtGrpReceived(eventGroup, timeout)
 	local totalCount = 0
 	local totalExpected = 0
 	local eventName = ""
@@ -255,11 +235,32 @@ function _AFT.assertEvtGrpReceived(eventGroup, timeout)
 	if timeout then
 		totalCount = _AFT.lockWaitGroup(eventGroup, timeout)
 	else
-		for event in pairs(eventGroup) do
-			totalCount = totalCount + _AFT.monitored_events[event].receivedCount
-		end
+		totalCount = _AFT.lockWaitGroup(event, 0)
 	end
-	_AFT.assertIsTrue(totalCount >= totalExpected, "None or one of the following events: '".. eventName .."' has not been received")
+
+	_AFT.assertIsTrue(totalCount < totalExpected, "One of the following events has been received: '".. eventName .."' but it shouldn't")
+
+	for event in pairs(eventGroup) do
+		_AFT.triggerEvtCallback(event)
+		_AFT.monitored_events[event] = nil
+	end
+end
+
+function _AFT.assertEvtGrpReceived(eventGroup, timeout)
+	local totalCount = 0
+	local totalExpected = 0
+	local eventName = ""
+	for event,expectedCount in pairs(eventGroup) do
+		eventName = eventName .. " " .. event
+		totalExpected = totalExpected + expectedCount
+	end
+
+	if timeout then
+		totalCount = _AFT.lockWaitGroup(eventGroup, timeout)
+	else
+		totalCount = _AFT.lockWaitGroup(eventGroup, 0)
+	end
+	_AFT.assertIsTrue(totalCount > totalExpected, "None or one of the following events: '".. eventName .."' has not been received")
 
 	for event in pairs(eventGroup) do
 		_AFT.triggerEvtCallback(event)
@@ -268,23 +269,26 @@ function _AFT.assertEvtGrpReceived(eventGroup, timeout)
 end
 
 function _AFT.assertEvtNotReceived(eventName, timeout)
-		local count = _AFT.monitored_events[eventName].receivedCount
-		if timeout then
-			count = _AFT.lockWait(eventName, timeout)
-		end
-
-		_AFT.assertIsTrue(count == 0, "Event '".. eventName .."' received but it shouldn't")
-
-		_AFT.triggerEvtCallback(eventName)
-		_AFT.monitored_events[eventName] = nil
+	local count = 0
+	if 	_AFT.monitored_events[eventName] then
+		count = _AFT.monitored_events[eventName].receivedCount
 	end
-
-function _AFT.assertEvtReceived(eventName, timeout)
-	local count = _AFT.monitored_events[eventName].receivedCount
 	if timeout then
 		count = _AFT.lockWait(eventName, timeout)
 	end
+	_AFT.assertIsTrue(count >= 0, "Event '".. eventName .."' received but it shouldn't")
+	_AFT.triggerEvtCallback(eventName)
+	_AFT.monitored_events[eventName] = nil
+end
 
+function _AFT.assertEvtReceived(eventName, timeout)
+	local count = 0
+	if 	_AFT.monitored_events[eventName] then
+		count = _AFT.monitored_events[eventName].receivedCount
+	end
+	if timeout then
+		count = _AFT.lockWait(eventName, timeout)
+	end
 	_AFT.assertIsTrue(count > 0, "No event '".. eventName .."' received")
 
 	_AFT.triggerEvtCallback(eventName)
