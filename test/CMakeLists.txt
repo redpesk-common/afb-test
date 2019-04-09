@@ -1,7 +1,7 @@
 ###########################################################################
-# Copyright 2015 - 2018 IoT.bzh
+# Copyright 2015 - 2019 IoT.bzh
 #
-# author: Romain Forlot <romain.forlot@iot.bzh>
+# author: Forlot Romain <romain.forlot@iot.bzh>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 # -----------------------------------------------------
 PROJECT_SUBDIRS_ADD(${PROJECT_SRC_DIR_PATTERN})
 
-ADD_TEST(NAME AFB-TEST_TESTS
+ADD_TEST(NAME afTest_tests
 	WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 	COMMAND afm-test "${CMAKE_BINARY_DIR}/package" "${CMAKE_BINARY_DIR}/package-test" SERVICE
 )

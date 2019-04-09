@@ -26,16 +26,34 @@ function _unsubscribe(source, args)
   AFB:success(source)
 end
 
+function _evtpush(source, context, val)
+  local event = val[0]
+  return AFB:evtpush(source, _evtHandles[event], val[1])
+end
+
 function _get(source, args)
-  local evtHandle1 = AFB:evtmake(source, 'messages_engine_speed')
-  local evtHandle2 = AFB:evtmake(source, 'messages_vehicle_speed')
-	if type(evtHandle1) == "userdata" and type(evtHandle2) == "userdata" then
-		AFB:subscribe(source, evtHandle1)
-    AFB:evtpush(source,evtHandle1,{value = 1234})
-    AFB:subscribe(source, evtHandle2)
-		AFB:evtpush(source,evtHandle2,{value = 5678})
-	end
+  _evtHandles = {}
+  _messageHandles = {}
+
+  _evtHandles['messages_engine_speed'] = nil
+  _evtHandles['messages_vehicle_speed'] = nil
+
+  _messageHandles['messages_engine_speed'] = 1234
+  _messageHandles['messages_vehicle_speed'] = 5678
+
+  for k,v in pairs(_messageHandles) do
+    if type(_evtHandles[k]) ~= "userdata" then
+      _evt = AFB:evtmake(source, k)
+      _evtHandles[k] = _evt
+    end
+    if type(_evtHandles[k]) == "userdata" then
+      AFB:subscribe(source, _evtHandles[k])
+      AFB:timerset(source, {uid="evtpush_"..k, delay=1, count=1}, "_evtpush", {k, v})
+    end
+  end
+
   AFB:success(source)
+
 end
 
 function _list(source, args)
