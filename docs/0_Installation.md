@@ -1,6 +1,6 @@
 # Installation
 
-[Setup the pre-requisite](http://docs.automotivelinux.org/docs/devguides/en/dev/reference/host-configuration/docs/1_Prerequisites.html).
+[Setup the pre-requisite](http://docs.automotivelinux.org/guppy/docs/devguides/en/dev/reference/host-configuration/docs/1_Prerequisites.html).
 
 Use the following command-line to get the `afb-test` binding and all its
 dependencies.
