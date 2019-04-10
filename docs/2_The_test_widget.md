@@ -46,7 +46,7 @@ ie:
 
 ```bash
 cd build
-cmake -DBUILD_TEST_WIDGET=TRUE ..
+cmake -DBUILD_TEST_WGT=TRUE ..
 make
 make widget
 ```
