@@ -2,15 +2,15 @@
 
 ## Create the test tree
 
-At the root of your project, create a test dedicated directory that will hold
-all your tests materials. A classic test tree looks like the following:
+At the root of your project, create a test-dedicated directory that holds
+all your test materials. A classic test tree looks like the following:
 
 ```tree
  test
  ├── CMakeLists.txt
  ├── etc
  │   ├── CMakeLists.txt
- │   └── aft-middlename.json
+ │   └── aft-agl-middlename.json
  ├── fixtures
  │   ├── CMakeLists.txt
  │   ├── helper.sh
@@ -26,71 +26,74 @@ all your tests materials. A classic test tree looks like the following:
 
 Here is a description of each subdirectory purpose:
 
-- etc: holds the test binding configuration in a JSON file.
-- fixtures: contains all external needed files to run your tests. This is mainly
- used to inject data or a plugin with the mock-up APIs code in a LUA or C plugin
-- tests: Contains only the tests written in LUA for your binding.
+- *etc*`: Holds the test binding configuration in a JSON file.
+- *fixtures*: contains all external needed files to run your tests.
+  This subdirectory is primarily used to inject data or a plugin
+  with the mock-up APIs code in a LUA or C plugin.
+- *tests*: Contains only the tests written in LUA for your binding.
 
 ## Create your configuration file
 
-The configuration file describes your test api and how it launches the tests. A
-test binding doesn't provide verbs and this configuration will describe the api
-verb(s), mocked-up apis. Here are the `key` descriptions for this file:
+The configuration file describes your test API and how it launches the tests.
+A test binding does not provide verbs.
+This configuration describes the API verb(s) and mocked-up APIs.
+Following are the `key` descriptions for the configuration file:
 
 ### `metadata` section
 
-- `uid`: A simple label mainly useful at debugging purpose
-- `version` (optional): the test's version
-- `info` (optional): self-explanatory
-- `api`: the name that your test binding will take. Used to be the test api's
- name prefixed with `aft` (ie: `aft-<tested-api-name>`)
-- `require`: the tested api's name. This key ensure that the tested api is
- correctly launched and initialized so the test binding could test it.
+- `uid`: A simple label useful for debugging.
+- `version` (optional): The test's version.
+- `info` (optional): Provides information about the test.
+- `api`: The name your test binding takes.
+  Formerly, the name was the test API name prefixed with `aft`
+  (i.e. `aft-<tested-api-name>`).
+- `require`: The tested API's name. This key ensure that the tested API is
+  correctly launched and initialized so the test binding can test it.
 
 ### `testVerb` section
 
-- `uid`: the verb name
-- `info` (optional): self-explanatory
-- `action`: special string indicating which function to trigger when the verb is
- called. It will always be the same about the test binding.
-- `args` section:
-  - `trace`: the name of the tested api that you are going to test. This is
-   needed to let the test binding tracing the tested api and retrieve through
-   the binder monitoring feature `calls` and `events`.
+- `uid`: The verb name.
+- `info` (optional): Provides information about the verb.
+- `action`: A special string indicating the function to trigger when the verb is
+  called. The verb is always the same about the test binding.
+- `args` Contains the following:
+  - `trace`: The name of the tested API you are testing. `trace` is
+   needed to allow the test binding trace the tested API and retrieve through
+   the binder's monitoring feature `calls` and `events`.
   - `files`: A string or an array of strings of the LUA files with your tests.
-   Only provide the file name without the path.
+   Only provide the file name.  Do not provide the path.
 
-### `mapis`, stand for Mock-up api, section
+### `mapis` (mocked up API), section
 
-- `uid`: the mocked up api's name
-- `info` (optional): self explanatory
-- `libs`: LUA script or C plugin file name
+- `uid`: The mocked up API's name
+- `info` (optional): Provides information on the mock-up API.
+- `libs`: The LUA script or C plugin file name.
 
 #### `verbs` section
 
-Describe the implemented mocked up API verbs. Each verb is mapped to a function
-name that will be executed at the verb call.
+Describes the implemented mocked up API verbs. Each verb maps to a function
+name that is executed when the verb is called.
 
-- `uid`: verb's name
-- `info` (optional): self explanatory
-- `action`: an URI string that point to a C plugin or LUA script's function that
- will be executed at the verb call. The format of the action URI is:
+- `uid`: The verb's name.
+- `info` (optional): Provides information on the verb.
+- `action`: A URI string that points to a C plugin or LUA script's function that
+  is executes when the verb is called. The format of the action URI is:
  `<lua|plugin|api>`://`<C plugin's name|api's name|lua script name>`#`<function|verb's name>`
 
-#### `events` section
+#### `events` section.
 
-This section allows you to trigger a function when a described event is received
-. It could be for any event which you need to apply modifications on it. You DO
-NOT have to enumerate each possible events that the mocked up api would
-generate, you could avoid this section if you do not want to execute a function
-at events reception.
+Allows you to trigger a function when a described event is received.
+The trigger can be for any event on which you need to apply modifications.
+You do not have to enumerate each possible event that the mocked up API can
+generate.  You could avoid this section if you do not want to execute a function
+when an event is received.
 
-- `uid`: event's name (`<api>/<event-name>`)
-- `info` (optional): self explanatory
-- `action`: an URI string that point to a C plugin or LUA script's function that
- will be executed at the event reception. The format of the action URI is:
- `<lua|plugin|api>`://`<C plugin's name|api's name|lua script name>`#`<function|verb's name>`
- the action `lua://AFT#_evt_catcher_` is the default `afb-test` events listener.
+- `uid`: The event's name (e.g. `<api>/<event-name>`)
+- `info` (optional): Provides information about the event.
+- `action`: A URI string that points to a C plugin or LUA script's function that
+  is executed when an event is received. The format of the action URI is:
+  `<lua|plugin|api>`://`<C plugin's name|api's name|lua script name>`#`<function|verb's name>`.
+  The action `lua://AFT#_evt_catcher_` is the default `afb-test` events listener.
 
 ### Configuration examples
 
@@ -121,7 +124,7 @@ Here is a simple example:
 }
 ```
 
-and another example that mock-up the `low-can` api:
+Following is another example that uses a mocked up `low-can` API:
 
 ```json
 {
@@ -180,22 +183,23 @@ and another example that mock-up the `low-can` api:
 
 The test framework uses the LUA language to describe the tests.
 
-You have two different things to have in mind when you write your tests using
+You must be aware of two things when you write tests using
 this framework: *test* and *assertions* functions.
 
-- *Assertions* functions are meant to test an atomic operation result.
- (ie: `1+1 = 2` is an assertion)
-- *Test* functions represent a test (Unbelievable), they represent a set of one
- or several *assertions* which are all needed to succeed to valid the test.
+- *Assertions* functions test an atomic operation result.
+  (ie: `1+1 = 2`).
+- *Test* functions represent a test. These functions represent a set of one
+  or more *assertions* that must all succeed in order to valid the test.
 
-The framework comes with several *test* and *assertion* functions to simply be
-able to test verb calls and events receiving. Use the *test* ones and if you
-need more use the ones that call a callback. If the test is more complex or
+The framework comes with several *test* and *assertion* functions that
+allow verb calls and received events to be tested. Use these provided
+*test* functions as a start.  If you
+need more functions, use the ones that call a callback. If the test is more complex or
 more comprehensive then *describe* your test function using *assert* functions.
-See the example below.
+Following is an example.
 
 See the test framework functions [References](Reference/Introduction.md) for a
-comprehensive list of *tests* and *assertions* functions available.
+comprehensive list of available *tests* and *assertions* functions.
 
 ### Tests example
 
