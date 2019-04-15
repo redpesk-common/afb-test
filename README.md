@@ -1,3 +1,3 @@
 # Binding tester
 
-You'll find the doc [here](http://docs.automotivelinux.org/master/docs/apis_services/en/dev/reference/afb-test/Installation.html)
+You'll find the doc [here](http://docs.automotivelinux.org/docs/en/master/apis_services/reference/afb-test/0_Installation.html)

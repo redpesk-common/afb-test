@@ -6,7 +6,7 @@ Now that the test tree has been created, in each directory you have to create
 a `CMakeLists.txt` file to hold the CMake's target definition. For each target
 you need to specify a **LABELS** depending on the purpose of the files for each
 directory. There are more explanations about using the *cmake-apps-module* (the
-former *app-templates* submodule) in the [documentation website](http://docs.automotivelinux.org/master/docs/devguides/en/dev/reference/cmakeafbtemplates/3_advanced_usage.html#using-cmake-template-macros).
+former *app-templates* submodule) in the [documentation website](../../../devguides/reference/cmakeafbtemplates/dev_guide/advanced-usage.html).
 
 Here is a cheat sheet to map the **LABELS** target for each classic test tree
 directory:
