@@ -198,7 +198,7 @@ need more functions, use the ones that call a callback. If the test is more comp
 more comprehensive then *describe* your test function using *assert* functions.
 Following is an example.
 
-See the test framework functions [References](Reference/Introduction.md) for a
+See the test framework functions [References](Reference/0_BindingTestFunctions.html) for a
 comprehensive list of available *tests* and *assertions* functions.
 
 ### Tests example
