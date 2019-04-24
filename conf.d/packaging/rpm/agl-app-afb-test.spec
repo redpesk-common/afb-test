@@ -56,9 +56,6 @@ cmake -DCMAKE_BUILD_TYPE=DEBUG -DVERSION=%{version} ..
 %install
 [ -d build ] && cd build
 %make_install
-mkdir -p %{buildroot}%{_prefix}/afm/applications/afTest/%{version}
-mv %{buildroot}%{_prefix}/afTest/* %{buildroot}/%{_prefix}/afm/applications/afTest/%{version}
-rmdir %{buildroot}/%{_prefix}/afTest
 
 %post
 
