@@ -66,19 +66,19 @@ cmake -DCMAKE_BUILD_TYPE=DEBUG -DVERSION=%{version} ..
 %dir %{_prefix}
 %dir %{_bindir}
 %{_bindir}/afm-test
-%dir %{_prefix}/afm/
-%dir %{_prefix}/afm/applications/
-%dir %{_prefix}/afm/applications/afTest/
-%dir %{_prefix}/afm/applications/afTest/%{version}/
-%dir %{_prefix}/afm/applications/afTest/%{version}/etc
-%{_prefix}/afm/applications/afTest/%{version}/etc/aft-afbtest.json
-%dir %{_prefix}/afm/applications/afTest/%{version}/bin
-%dir %{_prefix}/afm/applications/afTest/%{version}/lib
-%{_prefix}/afm/applications/afTest/%{version}/lib/aft.so
-%dir %{_prefix}/afm/applications/afTest/%{version}/htdocs
-%dir %{_prefix}/afm/applications/afTest/%{version}/var
-%{_prefix}/afm/applications/afTest/%{version}/var/aft.lua
-%{_prefix}/afm/applications/afTest/%{version}/var/luaunit.lua
+%dir %{_prefix}
+%dir %{_prefix}
+%dir %{_prefix}/afTest/
+%dir %{_prefix}/afTest/%{version}/
+%dir %{_prefix}/afTest/%{version}/etc
+%{_prefix}/afTest/%{version}/etc/aft-afbtest.json
+%dir %{_prefix}/afTest/%{version}/bin
+%dir %{_prefix}/afTest/%{version}/lib
+%{_prefix}/afTest/%{version}/lib/aft.so
+%dir %{_prefix}/afTest/%{version}/htdocs
+%dir %{_prefix}/afTest/%{version}/var
+%{_prefix}/afTest/%{version}/var/aft.lua
+%{_prefix}/afTest/%{version}/var/luaunit.lua
 
 %files devel
 %defattr(-,root,root)
