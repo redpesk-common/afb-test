@@ -69,16 +69,16 @@ cmake -DCMAKE_BUILD_TYPE=DEBUG -DVERSION=%{version} ..
 %dir %{_prefix}
 %dir %{_prefix}
 %dir %{_prefix}/afTest/
-%dir %{_prefix}/afTest/%{version}/
-%dir %{_prefix}/afTest/%{version}/etc
-%{_prefix}/afTest/%{version}/etc/aft-afbtest.json
-%dir %{_prefix}/afTest/%{version}/bin
-%dir %{_prefix}/afTest/%{version}/lib
-%{_prefix}/afTest/%{version}/lib/aft.so
-%dir %{_prefix}/afTest/%{version}/htdocs
-%dir %{_prefix}/afTest/%{version}/var
-%{_prefix}/afTest/%{version}/var/aft.lua
-%{_prefix}/afTest/%{version}/var/luaunit.lua
+%dir %{_prefix}/afTest/
+%dir %{_prefix}/afTest/etc
+%{_prefix}/afTest/etc/aft-afbtest.json
+%dir %{_prefix}/afTest/bin
+%dir %{_prefix}/afTest/lib
+%{_prefix}/afTest/lib/aft.so
+%dir %{_prefix}/afTest/htdocs
+%dir %{_prefix}/afTest/var
+%{_prefix}/afTest/var/aft.lua
+%{_prefix}/afTest/var/luaunit.lua
 
 %files devel
 %defattr(-,root,root)
