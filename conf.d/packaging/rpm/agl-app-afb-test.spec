@@ -55,8 +55,8 @@ cmake -DCMAKE_BUILD_TYPE=DEBUG -DVERSION=%{version} ..
 %install
 [ -d build ] && cd build
 %make_install
-mkdir -p %{buildroot}%{_prefix}/afm/applications/afTest/%{version}
-mv %{buildroot}%{_prefix}/afTest/* %{buildroot}/%{_prefix}/afm/applications/afTest/%{version}
+mkdir -p %{buildroot}%{_prefix}/
+mv %{buildroot}%{_prefix}/afTest/* %{buildroot}/%{_prefix}/
 rmdir %{buildroot}/%{_prefix}/afTest
 
 %post
@@ -68,19 +68,18 @@ rmdir %{buildroot}/%{_prefix}/afTest
 %dir %{_prefix}
 %dir %{_bindir}
 %{_bindir}/afm-test
-%dir %{_prefix}/afm/
-%dir %{_prefix}/afm/applications/
-%dir %{_prefix}/afm/applications/afTest/
-%dir %{_prefix}/afm/applications/afTest/%{version}/
-%dir %{_prefix}/afm/applications/afTest/%{version}/etc
-%{_prefix}/afm/applications/afTest/%{version}/etc/aft-afbtest.json
-%dir %{_prefix}/afm/applications/afTest/%{version}/bin
-%dir %{_prefix}/afm/applications/afTest/%{version}/lib
-%{_prefix}/afm/applications/afTest/%{version}/lib/aft.so
-%dir %{_prefix}/afm/applications/afTest/%{version}/htdocs
-%dir %{_prefix}/afm/applications/afTest/%{version}/var
-%{_prefix}/afm/applications/afTest/%{version}/var/aft.lua
-%{_prefix}/afm/applications/afTest/%{version}/var/luaunit.lua
+%dir %{_prefix}/
+%dir %{_prefix}/afTest/
+%dir %{_prefix}/
+%dir %{_prefix}/etc
+%{_prefix}/etc/aft-afbtest.json
+%dir %{_prefix}/bin
+%dir %{_prefix}/lib
+%{_prefix}/lib/aft.so
+%dir %{_prefix}/htdocs
+%dir %{_prefix}/var
+%{_prefix}/var/aft.lua
+%{_prefix}/var/luaunit.lua
 
 %files devel
 %defattr(-,root,root)

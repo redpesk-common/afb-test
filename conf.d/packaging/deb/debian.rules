@@ -13,7 +13,7 @@ override_dh_auto_configure:
 
 override_dh_auto_install:
 	dh_auto_install --destdir=/usr/src/packages/BUILD/debian/tmp
-	mkdir -p debian/tmp/opt/AGL/afm/applications/
-	mv debian/tmp/opt/AGL/afTest/ debian/tmp/opt/AGL/afm/applications/
+	mkdir -p debian/tmp/opt/AGL/
+	mv debian/tmp/opt/AGL/afTest/ debian/tmp/opt/AGL/
 
 override_dh_auto_test:
