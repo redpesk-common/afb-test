@@ -71,7 +71,7 @@ set (PKG_REQUIRED_LIST
 	json-c
 	libsystemd>=222
 	afb-daemon>=4.0
-	appcontroller
+	ctl-utilities
 	afb-helpers
 )
 
