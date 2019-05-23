@@ -8,6 +8,12 @@
 
     The inverse than above.
 
+* **_AFT.assertVerbStatusSkipped(api, verb, args, msg)**
+
+    Skip a test.
+
+    *msg* must contain your test name if you want to parse the output.
+
 * **_AFT.assertVerbResponseEquals(api, verb, args, expectedResponse)**
 
     Test that the call of a verb successfully returns and that verb's response

@@ -358,6 +358,14 @@ function _AFT.assertVerb(api, verb, args, cb)
 	end
 end
 
+function _AFT.assertVerbSkipped(api, verb, args, cb, msg)
+	if(msg) then
+		lu.skipIf(not _AFT.assertVerb(api, verb, args, cb), "Test is skipped because "..msg)
+	else
+		lu.skipIf(not _AFT.assertVerb(api, verb, args, cb), "Test is skipped")
+	end
+end
+
 function _AFT.assertVerbError(api, verb, args, cb)
 	assertVerbCallParameters(_AFT.context, api, verb, args)
 	local err,responseJ = AFB:servsync(_AFT.context, api, verb, args)
@@ -391,6 +399,12 @@ end
 function _AFT.testVerb(testName, api, verb, args, setUp, tearDown)
 	_AFT.describe(testName, function()
 		_AFT.assertVerb(api, verb, args)
+	end, setUp, tearDown)
+end
+
+function _AFT.testVerbSkipped(testName, api, verb, args, setUp, tearDown, msg)
+	_AFT.describe(testName, function()
+		_AFT.assertVerbSkipped(api, verb, args, nil, msg)
 	end, setUp, tearDown)
 end
 
@@ -524,6 +538,7 @@ local luaunit_list_of_assert = {
 	'assertErrorMsgEquals',
 	'assertErrorMsgContains',
 	'assertErrorMsgMatches',
+	'assertErrorMsgContentEquals',
 	'assertIs',
 	'assertNotIs',
 
@@ -575,12 +590,14 @@ local _AFT_list_of_funcs = {
 	{ 'assertVerb',      'assertVerbResponseEquals' },
 	{ 'assertVerb',      'assertVerbCb' },
 	{ 'assertVerbError', 'assertVerbStatusError' },
+	{ 'assertVerbSkipped',      'assertVerbStatusSkipped' },
 	{ 'assertVerbError', 'assertVerbResponseEqualsError' },
 	{ 'assertVerbError', 'assertVerbCbError' },
 	{ 'testVerb',      'testVerbStatusSuccess' },
 	{ 'testVerb',      'testVerbResponseEquals' },
 	{ 'testVerbError', 'testVerbStatusError' },
 	{ 'testVerbError', 'testVerbResponseEqualsError' },
+	{ 'testVerbSkipped',      'testVerbStatusSkipped' },
 }
 
 -- Import all luaunit assertion function to _AFT object
@@ -605,8 +622,9 @@ local function call_tests()
 	AFB:success(_AFT.context, { info = "Launching tests"})
 	lu.LuaUnit:runSuiteByInstances(_AFT.tests_list)
 
-	local success ="Success : "..tostring(lu.LuaUnit.result.passedCount)
-	local failures="Failures : "..tostring(lu.LuaUnit.result.testCount-lu.LuaUnit.result.passedCount)
+	local success ="Success : "..tostring(lu.LuaUnit.result.successCount)
+	local skipped ="Skipped : "..tostring(lu.LuaUnit.result.skippedCount)
+	local failures="Failures : "..tostring(lu.LuaUnit.result.failureCount)
 
 	local evtHandle = AFB:evtmake(_AFT.context, 'results')
 	--if type(evtHandle) == "userdata" then
@@ -687,6 +705,5 @@ function _launch_test(context, confArgs, queryArgs)
 		readOneFile(confArgs.files)
 		process_tests()
 	end
-
 	if _AFT.exit[1] == 1 then os.exit(_AFT.exit[2]) end
 end

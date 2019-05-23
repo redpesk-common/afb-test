@@ -20,6 +20,18 @@
     (if set) functions, *tearDown* will be ran after your *testFunction* and
     **_AFT.afterEach()**  (if set) functions.
 
+* **_AFT.testVerbStatusSkipped(testName, api, verb, args, setUp, tearDown, msg)**
+
+    Skip a test.
+
+    *msg* is a message to indicate the reason why the test is skip,
+    it must contain your test name if you want to parse the output.
+    *setUp* and *tearDown* are functions that can be added to your context,
+    it works just like  **_AFT.beforeEach()** and **_AFT.afterEach()**,
+    *setUp* will be ran before your *testFunction* and **_AFT.beforeEach()**
+    (if set) functions, *tearDown* will be ran after your *testFunction* and
+    **_AFT.afterEach()**  (if set) functions.
+
 * **_AFT.testVerbResponseEquals(testName, api, verb, args, expectedResponse, setUp, tearDown)**
 
     Test that the call of a verb successfully returns and that verb's response
