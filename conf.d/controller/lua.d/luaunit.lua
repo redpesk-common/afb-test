@@ -67,6 +67,7 @@ local cmdline_argv = rawget(_G, "arg")
 
 M.FAILURE_PREFIX = 'LuaUnit test FAILURE: ' -- prefix string for failed tests
 M.SUCCESS_PREFIX = 'LuaUnit test SUCCESS: ' -- prefix string for successful tests finished early
+M.SKIP_PREFIX    = 'LuaUnit test SKIP:    ' -- prefix string for skipped tests
 
 
 
@@ -226,9 +227,13 @@ local function strsplit(delimiter, text)
 -- Split text into a list consisting of the strings in text, separated
 -- by strings matching delimiter (which may _NOT_ be a pattern).
 -- Example: strsplit(", ", "Anna, Bob, Charlie, Dolores")
-    if delimiter == "" then -- this would result in endless loops
-        error("delimiter matches empty string!")
+    if delimiter == "" or delimiter == nil then -- this would result in endless loops
+        error("delimiter is nil or empty string!")
     end
+    if text == nil then
+        return nil
+    end
+
     local list, pos, first, last = {}, 1
     while true do
         first, last = text:find(delimiter, pos, true)
@@ -500,9 +505,22 @@ function M.adjust_err_msg_with_iter( err_msg, iter_msg )
 
     local RE_FILE_LINE = '.*:%d+: '
 
+    -- error message is not necessarily a string, 
+    -- so convert the value to string with prettystr()
+    if type( err_msg ) ~= 'string' then
+        err_msg = prettystr( err_msg )
+    end
+
     if (err_msg:find( M.SUCCESS_PREFIX ) == 1) or err_msg:match( '('..RE_FILE_LINE..')' .. M.SUCCESS_PREFIX .. ".*" ) then
         -- test finished early with success()
-        return nil, M.NodeStatus.PASS
+        return nil, M.NodeStatus.SUCCESS
+    end
+
+    if (err_msg:find( M.SKIP_PREFIX ) == 1) or (err_msg:match( '('..RE_FILE_LINE..')' .. M.SKIP_PREFIX .. ".*" ) ~= nil) then
+        -- substitute prefix by iteration message
+        err_msg = err_msg:gsub('.*'..M.SKIP_PREFIX, iter_msg, 1)
+        -- print("failure detected")
+        return err_msg, M.NodeStatus.SKIP
     end
 
     if (err_msg:find( M.FAILURE_PREFIX ) == 1) or (err_msg:match( '('..RE_FILE_LINE..')' .. M.FAILURE_PREFIX .. ".*" ) ~= nil) then
@@ -510,22 +528,24 @@ function M.adjust_err_msg_with_iter( err_msg, iter_msg )
         err_msg = err_msg:gsub(M.FAILURE_PREFIX, iter_msg, 1)
         -- print("failure detected")
         return err_msg, M.NodeStatus.FAIL
-    else
-        -- print("error detected")
-        -- regular error, not a failure
-        if iter_msg then
-            local match
-            -- "./test\\test_luaunit.lua:2241: some error msg
-            match = err_msg:match( '(.*:%d+: ).*' ) 
-            if match then
-                err_msg = err_msg:gsub( match, match .. iter_msg )
-            else
-                -- no file:line: infromation, just add the iteration info at the beginning of the line
-                err_msg = iter_msg .. err_msg
-            end
-        end
-        return err_msg, M.NodeStatus.ERROR
     end
+
+
+
+    -- print("error detected")
+    -- regular error, not a failure
+    if iter_msg then
+        local match
+        -- "./test\\test_luaunit.lua:2241: some error msg
+        match = err_msg:match( '(.*:%d+: ).*' ) 
+        if match then
+            err_msg = err_msg:gsub( match, match .. iter_msg )
+        else
+            -- no file:line: infromation, just add the iteration info at the beginning of the line
+            err_msg = iter_msg .. err_msg
+        end
+    end
+    return err_msg, M.NodeStatus.ERROR
 end
 
 local function tryMismatchFormatting( table_a, table_b, doDeepAnalysis )
@@ -887,7 +907,11 @@ local function _table_tostring( tbl, indentLevel, printTableRefs, recursionTable
     if mt and mt.__tostring then
         -- if table has a __tostring() function in its metatable, use it to display the table
         -- else, compute a regular table
-        result = strsplit( '\n', tostring(tbl) )
+        result = tostring(tbl)
+        if type(result) ~= 'string' then
+            return string.format( '<invalid tostring() result: "%s" >', prettystr(result) )
+        end
+        result = strsplit( '\n', result )
         return M.private._table_tostring_format_multiline_string( result, indentLevel )
 
     else
@@ -1077,7 +1101,7 @@ local function _is_table_equals(actual, expected, recursions)
         return false -- different types won't match
     end
 
-    if (type_a == 'table') --[[ and (type_e == 'table') ]] then
+    if (type_a == 'table') then
         if actual == expected then
             -- Both reference the same table, so they are actually identical
             return recursions:store(actual, expected, true)
@@ -1093,10 +1117,9 @@ local function _is_table_equals(actual, expected, recursions)
         -- now, assume a "false" result, which we might adjust later if needed.
         recursions:store(actual, expected, false)
 
-        -- Tables must have identical element count, or they can't match.
-        if (#actual ~= #expected) then
-            return false
-        end
+        -- We used to verify that table count is identical here by comparing their length
+        -- but this is unreliable when table is not a sequence. There is a test in test_luaunit.lua
+        -- to catch this case.
 
         local actualKeysMatched, actualTableKeys = {}, {}
 
@@ -1234,6 +1257,25 @@ function M.failIf( cond, msg )
     end
 end
 
+function M.skip(msg)
+    -- skip a running test
+    error(M.SKIP_PREFIX .. msg, 2)
+end
+
+function M.skipIf( cond, msg )
+    -- skip a running test if condition is met
+    if cond then
+        error(M.SKIP_PREFIX .. msg, 2)
+    end
+end
+
+function M.runOnlyIf( cond, msg )
+    -- continue a running test if condition is met, else skip it
+    if not cond then
+        error(M.SKIP_PREFIX .. prettystr(msg), 2)
+    end
+end
+
 function M.success()
     -- stops a test with a success
     error(M.SUCCESS_PREFIX, 2)
@@ -1335,6 +1377,8 @@ end
 function M.assertStrContains( str, sub, isPattern, extra_msg_or_nil )
     -- this relies on lua string.find function
     -- a string always contains the empty string
+    -- assert( type(str) == 'string', 'Argument 1 of assertStrContains() should be a string.' ) )
+    -- assert( type(sub) == 'string', 'Argument 2 of assertStrContains() should be a string.' ) )
     if not string.find(str, sub, 1, not isPattern) then
         sub, str = prettystrPairs(sub, str, '\n')
         fail_fmt(2, extra_msg_or_nil, 'Could not find %s %s in string %s',
@@ -1381,40 +1425,54 @@ function M.assertStrMatches( str, pattern, start, final, extra_msg_or_nil )
     end
 end
 
-function M.assertErrorMsgEquals( expectedMsg, func, ... )
-    -- assert that calling f with the arguments will raise an error
-    -- example: assertError( f, 1, 2 ) => f(1,2) should generate an error
+local function _assertErrorMsgEquals( stripFileAndLine, expectedMsg, func, ... )
     local no_error, error_msg = pcall( func, ... )
     if no_error then
-        failure( 'No error generated when calling function but expected error: '..M.prettystr(expectedMsg), nil, 2 )
+        failure( 'No error generated when calling function but expected error: '..M.prettystr(expectedMsg), nil, 3 )
     end
     if type(expectedMsg) == "string" and type(error_msg) ~= "string" then
         -- table are converted to string automatically
         error_msg = tostring(error_msg)
     end
     local differ = false
-    if error_msg ~= expectedMsg then
-        local tr = type(error_msg)
-        local te = type(expectedMsg)
-        if te == 'table' then
-            if tr ~= 'table' then
-                differ = true
+    if stripFileAndLine then
+        if error_msg:gsub("^.+:%d+: ", "") ~= expectedMsg then
+            differ = true
+        end
+    else
+        if error_msg ~= expectedMsg then
+            local tr = type(error_msg)
+            local te = type(expectedMsg)
+            if te == 'table' then
+                if tr ~= 'table' then
+                    differ = true
+                else
+                     local ok = pcall(M.assertItemsEquals, error_msg, expectedMsg)
+                     if not ok then
+                         differ = true
+                     end
+                end
             else
-                 local ok = pcall(M.assertItemsEquals, error_msg, expectedMsg)
-                 if not ok then
-                     differ = true
-                 end
+               differ = true
             end
-        else
-           differ = true
         end
     end
 
     if differ then
         error_msg, expectedMsg = prettystrPairs(error_msg, expectedMsg)
-        fail_fmt(2, nil, 'Error message expected: %s\nError message received: %s\n',
+        fail_fmt(3, nil, 'Error message expected: %s\nError message received: %s\n',
                  expectedMsg, error_msg)
     end
+end
+
+function M.assertErrorMsgEquals( expectedMsg, func, ... )
+    -- assert that calling f with the arguments will raise an error
+    -- example: assertError( f, 1, 2 ) => f(1,2) should generate an error
+    _assertErrorMsgEquals(false, expectedMsg, func, ...)
+end
+
+function M.assertErrorMsgContentEquals(expectedMsg, func, ...)
+     _assertErrorMsgEquals(true, expectedMsg, func, ...)
 end
 
 function M.assertErrorMsgContains( partialMsg, func, ... )
@@ -1723,6 +1781,7 @@ local list_of_funcs = {
     { 'assertErrorMsgEquals'    , 'assert_error_msg_equals' },
     { 'assertErrorMsgContains'  , 'assert_error_msg_contains' },
     { 'assertErrorMsgMatches'   , 'assert_error_msg_matches' },
+    { 'assertErrorMsgContentEquals', 'assert_error_msg_content_equals' },
     { 'assertIs'                , 'assert_is' },
     { 'assertNotIs'             , 'assert_not_is' },
     { 'wrapFunctions'           , 'WrapFunctions' },
@@ -1885,13 +1944,36 @@ function genericOutput.new(runner, default_verbosity)
 end
 
 -- abstract ("empty") methods
-function genericOutput:startSuite() end
-function genericOutput:startClass(className) end
-function genericOutput:startTest(testName) end
-function genericOutput:addStatus(node) end
-function genericOutput:endTest(node) end
-function genericOutput:endClass() end
-function genericOutput:endSuite() end
+function genericOutput:startSuite() 
+    -- Called once, when the suite is started
+end
+
+function genericOutput:startClass(className) 
+    -- Called each time a new test class is started
+end
+
+function genericOutput:startTest(testName) 
+    -- called each time a new test is started, right before the setUp()
+    -- the current test status node is already created and available in: self.result.currentNode
+end
+
+function genericOutput:updateStatus(node) 
+    -- called with status failed or error as soon as the error/failure is encountered
+    -- this method is NOT called for a successful test because a test is marked as successful by default
+    -- and does not need to be updated
+end
+
+function genericOutput:endTest(node) 
+    -- called when the test is finished, after the tearDown() method
+end
+
+function genericOutput:endClass() 
+    -- called when executing the class is finished, before moving on to the next class of at the end of the test execution
+end
+
+function genericOutput:endSuite() 
+    -- called at the end of the test suite execution
+end
 
 
 ----------------------------------------------------------------
@@ -1909,7 +1991,7 @@ TapOutput.__class__ = 'TapOutput'
         return setmetatable( t, TapOutput_MT)
     end
     function TapOutput:startSuite()
-        print("1.."..self.result.testCount)
+        print("1.."..self.result.selectedCount)
         print('# Started on '..self.result.startDate)
     end
     function TapOutput:startClass(className)
@@ -1918,25 +2000,30 @@ TapOutput.__class__ = 'TapOutput'
         end
     end
 
-    function TapOutput:addStatus( node )
+    function TapOutput:updateStatus( node )
+        if node:isSkipped() then
+            io.stdout:write("ok ", self.result.currentTestNumber, "\t# SKIP ", node.msg, "\n" )
+            return
+        end
+
         io.stdout:write("not ok ", self.result.currentTestNumber, "\t", node.testName, "\n")
         if self.verbosity > M.VERBOSITY_LOW then
            print( prefixString( '#   ', node.msg ) )
         end
-        if self.verbosity > M.VERBOSITY_DEFAULT then
+        if (node:isFailure() or node:isError()) and self.verbosity > M.VERBOSITY_DEFAULT then
            print( prefixString( '#   ', node.stackTrace ) )
         end
     end
 
     function TapOutput:endTest( node )
-        if node:isPassed() then
+        if node:isSuccess() then
             io.stdout:write("ok     ", self.result.currentTestNumber, "\t", node.testName, "\n")
         end
     end
 
     function TapOutput:endSuite()
         print( '# '..M.LuaUnit.statusLine( self.result ) )
-        return self.result.notPassedCount
+        return self.result.notSuccessCount
     end
 
 
@@ -1982,7 +2069,7 @@ JUnitOutput.__class__ = 'JUnitOutput'
         print('# Starting test: '..testName)
     end
 
-    function JUnitOutput:addStatus( node )
+    function JUnitOutput:updateStatus( node )
         if node:isFailure() then
             print( '#   Failure: ' .. prefixString( '#   ', node.msg ):sub(4, nil) )
             -- print('# ' .. node.stackTrace)
@@ -1999,18 +2086,18 @@ JUnitOutput.__class__ = 'JUnitOutput'
         self.fd:write('<?xml version="1.0" encoding="UTF-8" ?>\n')
         self.fd:write('<testsuites>\n')
         self.fd:write(string.format(
-            '    <testsuite name="LuaUnit" id="00001" package="" hostname="localhost" tests="%d" timestamp="%s" time="%0.3f" errors="%d" failures="%d">\n',
-            self.result.runCount, self.result.startIsodate, self.result.duration, self.result.errorCount, self.result.failureCount ))
+            '    <testsuite name="LuaUnit" id="00001" package="" hostname="localhost" tests="%d" timestamp="%s" time="%0.3f" errors="%d" failures="%d" skipped="%d">\n',
+            self.result.runCount, self.result.startIsodate, self.result.duration, self.result.errorCount, self.result.failureCount, self.result.skippedCount ))
         self.fd:write("        <properties>\n")
         self.fd:write(string.format('            <property name="Lua Version" value="%s"/>\n', _VERSION ) )
         self.fd:write(string.format('            <property name="LuaUnit Version" value="%s"/>\n', M.VERSION) )
         -- XXX please include system name and version if possible
         self.fd:write("        </properties>\n")
 
-        for i,node in ipairs(self.result.tests) do
+        for i,node in ipairs(self.result.allTests) do
             self.fd:write(string.format('        <testcase classname="%s" name="%s" time="%0.3f">\n',
                 node.className, node.testName, node.duration ) )
-            if node:isNotPassed() then
+            if node:isNotSuccess() then
                 self.fd:write(node:statusXML())
             end
             self.fd:write('        </testcase>\n')
@@ -2023,7 +2110,7 @@ JUnitOutput.__class__ = 'JUnitOutput'
         self.fd:write('    </testsuite>\n')
         self.fd:write('</testsuites>\n')
         self.fd:close()
-        return self.result.notPassedCount
+        return self.result.notSuccessCount
     end
 
 
@@ -2033,7 +2120,7 @@ JUnitOutput.__class__ = 'JUnitOutput'
 --                     class TextOutput
 ----------------------------------------------------------------
 
---[[
+--[[    Example of other unit-tests suite text output
 
 -- Python Non verbose:
 
@@ -2156,11 +2243,12 @@ TextOutput.__class__ = 'TextOutput'
     end
 
     function TextOutput:endTest( node )
-        if node:isPassed() then
+        if node:isSuccess() then
             if self.verbosity > M.VERBOSITY_DEFAULT then
                 io.stdout:write("Ok\n")
             else
                 io.stdout:write(".")
+                io.stdout:flush()
             end
         else
             if self.verbosity > M.VERBOSITY_DEFAULT then
@@ -2173,8 +2261,9 @@ TextOutput.__class__ = 'TextOutput'
                 end
                 ]]
             else
-                -- write only the first character of status
+                -- write only the first character of status E, F or S
                 io.stdout:write(string.sub(node.status, 1, 1))
+                io.stdout:flush()
             end
         end
     end
@@ -2186,11 +2275,21 @@ TextOutput.__class__ = 'TextOutput'
         print()
     end
 
+    function TextOutput:displayErroredTests()
+        if #self.result.errorTests ~= 0 then
+            print("Tests with errors:")
+            print("------------------")
+            for i, v in ipairs(self.result.errorTests) do
+                self:displayOneFailedTest(i, v)
+            end
+        end
+    end
+
     function TextOutput:displayFailedTests()
-        if self.result.notPassedCount ~= 0 then
+        if #self.result.failedTests ~= 0 then
             print("Failed tests:")
             print("-------------")
-            for i, v in ipairs(self.result.notPassed) do
+            for i, v in ipairs(self.result.failedTests) do
                 self:displayOneFailedTest(i, v)
             end
         end
@@ -2202,9 +2301,10 @@ TextOutput.__class__ = 'TextOutput'
         else
             print()
         end
+        self:displayErroredTests()
         self:displayFailedTests()
         print( M.LuaUnit.statusLine( self.result ) )
-        if self.result.notPassedCount == 0 then
+        if self.result.notSuccessCount == 0 then
             print('OK')
         end
     end
@@ -2456,21 +2556,29 @@ end
     M.NodeStatus = NodeStatus
 
     -- values of status
-    NodeStatus.PASS  = 'PASS'
-    NodeStatus.FAIL  = 'FAIL'
-    NodeStatus.ERROR = 'ERROR'
+    NodeStatus.SUCCESS  = 'SUCCESS'
+    NodeStatus.SKIP     = 'SKIP'
+    NodeStatus.FAIL     = 'FAIL'
+    NodeStatus.ERROR    = 'ERROR'
 
     function NodeStatus.new( number, testName, className )
+        -- default constructor, test are PASS by default
         local t = { number = number, testName = testName, className = className }
         setmetatable( t, NodeStatus_MT )
-        t:pass()
+        t:success()
         return t
     end
 
-    function NodeStatus:pass()
-        self.status = self.PASS
-        -- useless but we know it's the field we want to use
+    function NodeStatus:success()
+        self.status = self.SUCCESS
+        -- useless because lua does this for us, but it helps me remembering the relevant field names
         self.msg = nil
+        self.stackTrace = nil
+    end
+
+    function NodeStatus:skip(msg)
+        self.status = self.SKIP
+        self.msg = msg
         self.stackTrace = nil
     end
 
@@ -2486,13 +2594,17 @@ end
         self.stackTrace = stackTrace
     end
 
-    function NodeStatus:isPassed()
-        return self.status == NodeStatus.PASS
+    function NodeStatus:isSuccess()
+        return self.status == NodeStatus.SUCCESS
     end
 
-    function NodeStatus:isNotPassed()
-        -- print('hasFailure: '..prettystr(self))
-        return self.status ~= NodeStatus.PASS
+    function NodeStatus:isNotSuccess()
+        -- Return true if node is either failure or error or skip
+        return (self.status == NodeStatus.FAIL or self.status == NodeStatus.ERROR or self.status == NodeStatus.SKIP)
+    end
+
+    function NodeStatus:isSkipped()
+        return self.status == NodeStatus.SKIP
     end
 
     function NodeStatus:isFailure()
@@ -2514,6 +2626,8 @@ end
                 {'            <failure type="', xmlEscape(self.msg), '">\n',
                  '                <![CDATA[', xmlCDataEscape(self.stackTrace),
                  ']]></failure>\n'})
+        elseif self:isSkipped() then
+            return table.concat({'            <skipped>', xmlEscape(self.msg),'</skipped>\n' } )
         end
         return '            <passed/>\n' -- (not XSD-compliant! normally shouldn't get here)
     end
@@ -2534,9 +2648,9 @@ end
         local s = {
             string.format('Ran %d tests in %0.3f seconds',
                           result.runCount, result.duration),
-            conditional_plural(result.passedCount, 'success'),
+            conditional_plural(result.successCount, 'success'),
         }
-        if result.notPassedCount > 0 then
+        if result.notSuccessCount > 0 then
             if result.failureCount > 0 then
                 table.insert(s, conditional_plural(result.failureCount, 'failure'))
             end
@@ -2546,17 +2660,20 @@ end
         else
             table.insert(s, '0 failures')
         end
+        if result.skippedCount > 0 then
+            table.insert(s, string.format("%d skipped", result.skippedCount))
+        end
         if result.nonSelectedCount > 0 then
             table.insert(s, string.format("%d non-selected", result.nonSelectedCount))
         end
         return table.concat(s, ', ')
     end
 
-    function M.LuaUnit:startSuite(testCount, nonSelectedCount)
+    function M.LuaUnit:startSuite(selectedCount, nonSelectedCount)
         self.result = {
-            testCount = testCount,
+            selectedCount = selectedCount,
             nonSelectedCount = nonSelectedCount,
-            passedCount = 0,
+            successCount = 0,
             runCount = 0,
             currentTestNumber = 0,
             currentClassName = "",
@@ -2566,10 +2683,17 @@ end
             startDate = os.date(os.getenv('LUAUNIT_DATEFMT')),
             startIsodate = os.date('%Y-%m-%dT%H:%M:%S'),
             patternIncludeFilter = self.patternIncludeFilter,
-            tests = {},
-            failures = {},
-            errors = {},
-            notPassed = {},
+
+            -- list of test node status
+            allTests = {},
+            failedTests = {},
+            errorTests = {},
+            skippedTests = {},
+
+            failureCount = 0,
+            errorCount = 0,
+            notSuccessCount = 0,
+            skippedCount = 0,
         }
 
         self.outputType = self.outputType or TextOutput
@@ -2591,13 +2715,13 @@ end
             self.result.currentClassName
         )
         self.result.currentNode.startTime = os.clock()
-        table.insert( self.result.tests, self.result.currentNode )
+        table.insert( self.result.allTests, self.result.currentNode )
         self.output:startTest( testName )
     end
 
-    function M.LuaUnit:addStatus( err )
+    function M.LuaUnit:updateStatus( err )
         -- "err" is expected to be a table / result from protectedCall()
-        if err.status == NodeStatus.PASS then
+        if err.status == NodeStatus.SUCCESS then
             return
         end
 
@@ -2614,35 +2738,36 @@ end
         ]]
 
         -- if the node is already in failure/error, just don't report the new error (see above)
-        if node.status ~= NodeStatus.PASS then
+        if node.status ~= NodeStatus.SUCCESS then
             return
         end
 
         if err.status == NodeStatus.FAIL then
             node:fail( err.msg, err.trace )
-            table.insert( self.result.failures, node )
+            table.insert( self.result.failedTests, node )
         elseif err.status == NodeStatus.ERROR then
             node:error( err.msg, err.trace )
-            table.insert( self.result.errors, node )
+            table.insert( self.result.errorTests, node )
+        elseif err.status == NodeStatus.SKIP then
+            node:skip( err.msg )
+            table.insert( self.result.skippedTests, node )
+        else
+            error('No such status: ' .. prettystr(err.status))
         end
 
-        if node:isFailure() or node:isError() then
-            -- add to the list of failed tests (gets printed separately)
-            table.insert( self.result.notPassed, node )
-        end
-        self.output:addStatus( node )
+        self.output:updateStatus( node )
     end
 
     function M.LuaUnit:endTest()
         local node = self.result.currentNode
         -- print( 'endTest() '..prettystr(node))
-        -- print( 'endTest() '..prettystr(node:isNotPassed()))
+        -- print( 'endTest() '..prettystr(node:isNotSuccess()))
         node.duration = os.clock() - node.startTime
         node.startTime = nil
         self.output:endTest( node )
 
-        if node:isPassed() then
-            self.result.passedCount = self.result.passedCount + 1
+        if node:isSuccess() then
+            self.result.successCount = self.result.successCount + 1
         elseif node:isError() then
             if self.quitOnError or self.quitOnFailure then
                 -- Runtime error - abort test execution as requested by
@@ -2659,6 +2784,10 @@ end
                 print("\nFailure during LuaUnit test execution:\n" .. node.msg)
                 self.result.aborted = true
             end
+        elseif node:isSkipped() then
+            self.result.runCount = self.result.runCount - 1
+        else
+            error('No such node status: ' .. prettystr(node.status))
         end
         self.result.currentNode = nil
     end
@@ -2675,11 +2804,12 @@ end
         self.result.suiteStarted = false
 
         -- Expose test counts for outputter's endSuite(). This could be managed
-        -- internally instead, but unit tests (and existing use cases) might
-        -- rely on these fields being present.
-        self.result.notPassedCount = #self.result.notPassed
-        self.result.failureCount = #self.result.failures
-        self.result.errorCount = #self.result.errors
+        -- internally instead by using the length of the lists of failed tests
+        -- but unit tests rely on these fields being present.
+        self.result.failureCount = #self.result.failedTests
+        self.result.errorCount = #self.result.errorTests
+        self.result.notSuccessCount = self.result.failureCount + self.result.errorCount
+        self.result.skippedCount = #self.result.skippedTests
 
         self.output:endSuite()
     end
@@ -2729,7 +2859,7 @@ end
             ok, err = xpcall( function () methodInstance() end, err_handler )
         end
         if ok then
-            return {status = NodeStatus.PASS}
+            return {status = NodeStatus.SUCCESS}
         end
 
         local iter_msg
@@ -2737,7 +2867,7 @@ end
 
         err.msg, err.status = M.adjust_err_msg_with_iter( err.msg, iter_msg )
 
-        if err.status == NodeStatus.PASS then
+        if err.status == NodeStatus.SUCCESS or err.status == NodeStatus.SKIP then
             err.trace = nil
             return err
         end
@@ -2782,7 +2912,7 @@ end
 
         local node = self.result.currentNode
         for iter_n = 1, self.exeRepeat or 1 do
-            if node:isNotPassed() then
+            if node:isNotSuccess() then
                 break
             end
             self.currentCount = iter_n
@@ -2794,13 +2924,13 @@ end
                              self.asFunction( classInstance.setup ) or
                              self.asFunction( classInstance.SetUp )
                 if func then
-                    self:addStatus(self:protectedCall(classInstance, func, className..'.setUp'))
+                    self:updateStatus(self:protectedCall(classInstance, func, className..'.setUp'))
                 end
             end
 
             -- run testMethod()
-            if node:isPassed() then
-                self:addStatus(self:protectedCall(classInstance, methodInstance, prettyFuncName))
+            if node:isSuccess() then
+                self:updateStatus(self:protectedCall(classInstance, methodInstance, prettyFuncName))
             end
 
             -- lastly, run tearDown (if any)
@@ -2810,7 +2940,7 @@ end
                              self.asFunction( classInstance.teardown ) or
                              self.asFunction( classInstance.Teardown )
                 if func then
-                    self:addStatus(self:protectedCall(classInstance, func, className..'.tearDown'))
+                    self:updateStatus(self:protectedCall(classInstance, func, className..'.tearDown'))
                 end
             end
         end
@@ -3026,7 +3156,7 @@ end
 
         self:runSuiteByNames( options.testNames or M.LuaUnit.collectTests() )
 
-        return self.result.notPassedCount
+        return self.result.notSuccessCount
     end
 -- class LuaUnit
 
