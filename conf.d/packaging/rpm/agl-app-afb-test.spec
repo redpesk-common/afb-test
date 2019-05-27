@@ -55,9 +55,7 @@ cmake -DCMAKE_BUILD_TYPE=DEBUG -DVERSION=%{version} ..
 %install
 [ -d build ] && cd build
 %make_install
-mkdir -p %{buildroot}%{_prefix}/
-mv %{buildroot}%{_prefix}/afTest/* %{buildroot}/%{_prefix}/
-rmdir %{buildroot}/%{_prefix}/afTest
+mkdir -p %{buildroot}%{_prefix}/afm-test
 
 %post
 
@@ -70,16 +68,15 @@ rmdir %{buildroot}/%{_prefix}/afTest
 %{_bindir}/afm-test
 %dir %{_prefix}/
 %dir %{_prefix}/afTest/
-%dir %{_prefix}/
-%dir %{_prefix}/etc
-%{_prefix}/etc/aft-afbtest.json
-%dir %{_prefix}/bin
-%dir %{_prefix}/lib
-%{_prefix}/lib/aft.so
-%dir %{_prefix}/htdocs
-%dir %{_prefix}/var
-%{_prefix}/var/aft.lua
-%{_prefix}/var/luaunit.lua
+%dir %{_prefix}/afTest/etc
+%{_prefix}/afTest/etc/aft-afbtest.json
+%dir %{_prefix}/afTest/bin
+%dir %{_prefix}/afTest/lib
+%{_prefix}/afTest/lib/aft.so
+%dir %{_prefix}/afTest/htdocs
+%dir %{_prefix}/afTest/var
+%{_prefix}/afTest/var/aft.lua
+%{_prefix}/afTest/var/luaunit.lua
 
 %files devel
 %defattr(-,root,root)
