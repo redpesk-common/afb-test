@@ -18,7 +18,6 @@
 
 #include <string.h>
 #include <mapis.h>
-#include <ctl-config.h>
 
 struct mapisHandleT {
 	afb_api_t mainApiHandle;
