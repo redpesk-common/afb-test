@@ -8,19 +8,21 @@ all your test materials. A classic test tree looks like the following:
 ```tree
  test
  ├── CMakeLists.txt
- ├── etc
- │   ├── CMakeLists.txt
- │   └── aft-agl-middlename.json
- ├── fixtures
- │   ├── CMakeLists.txt
- │   ├── helper.sh
- │   ├── data
- │   └── plugin.lua
- └── tests
+ └── afb-test
      ├── CMakeLists.txt
-     ├── test01.lua
-     ├── test02.lua
-     └── test03.lua
+     ├── etc
+     │   ├── CMakeLists.txt
+     │   └── aft-agl-middlename.json
+     ├── fixtures
+     │   ├── CMakeLists.txt
+     │   ├── helper.sh
+     │   ├── data
+     │   └── plugin.lua
+     └── tests
+         ├── CMakeLists.txt
+         ├── test01.lua
+         ├── test02.lua
+         └── test03.lua
  ...
 ```
 
