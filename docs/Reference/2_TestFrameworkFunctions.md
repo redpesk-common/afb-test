@@ -47,13 +47,15 @@
     **_AFT.afterEach()**  (if set) functions.
 
 * **_AFT.setBefore(testName, beforeTestFunction)**
+
     Set a function to be ran at the beginning of the given *testName* function.
 
-    ```lua
+```lua
     _AFT.testVerbStatusSuccess('testPingSuccess','hello', 'ping', {})
     _AFT.setBefore("testPingSuccess",function() print("~~~~~ Begin testPingSuccess ~~~~~") end)
     _AFT.setAfter("testPingSuccess",function() print("~~~~~ End testPingSuccess ~~~~~") end)
-    ```
+```
 
 * **_AFT.setBefore(testName, beforeTestFunction)**
+
     Set a function to be ran at the end of the given *testName* function.

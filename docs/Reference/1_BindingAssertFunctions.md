@@ -60,9 +60,9 @@
     **_AFT.addEventToMonitor** function.
 
     The table has to have this format:
-    ```lua
+ ```lua
     eventGrp = {["api/event_name_1"]=1,["api/event_name_2"]=2,["api/event_name_3"]=5}
-    ```
+ ```
     As you can see, in the table, event names are table keys and the value stored are
     the number of time that the events have to be received.
 

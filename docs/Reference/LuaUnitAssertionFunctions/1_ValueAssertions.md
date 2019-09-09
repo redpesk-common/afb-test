@@ -41,16 +41,16 @@
 
     Example :
 
-    ```lua
-    `s1='toto'
+```lua
+    s1='toto'
     s2='to'..'to'
     t1={1,2}
     t2={1,2}
     luaunit.assertIs(s1,s1) -- ok
     luaunit.assertIs(s1,s2) -- ok
     luaunit.assertIs(t1,t1) -- ok
-    luaunit.assertIs(t1,t2) -- fail`
-    ```
+    luaunit.assertIs(t1,t2) -- fail
+```
 
 * **_AFT.assertNotIs(actual, expected)**
 

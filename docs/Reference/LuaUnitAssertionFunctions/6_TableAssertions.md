@@ -7,13 +7,13 @@
     This function is practical for example if you want to compare two lists but
     where items are not in the same order:
 
-    ```lua
+```lua
     luaunit.assertItemsEquals( {1,2,3}, {3,2,1} ) -- assertion succeeds
-    ```
+```
     The comparison is not recursive on the items: if any of the items are tables,
     they are compared using table equality (like as in assertEquals() ), where the
     key matters.
 
-    ```lua
+```lua
     luaunit.assertItemsEquals( {1,{2,3},4}, {4,{3,2,},1} ) -- assertion fails because {2,3} ~= {3,2}
-    ```
+```
