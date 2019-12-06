@@ -222,11 +222,11 @@ static int CtrlLoadOneApi(void *cbdata, afb_api_t apiHandle) {
 }
 
 static CtlConfigT *CtrlLoadConfigJson(afb_api_t apiHandle, json_object *configJ) {
-	return CtlLoadMetaDataJson(apiHandle, configJ, CONTROL_PREFIX);
+	return CtlLoadMetaDataJson(apiHandle, configJ);
 }
 
 static CtlConfigT *CtrlLoadConfigFile(afb_api_t apiHandle, const char *configPath) {
-	return CtlLoadMetaDataUsingPrefix(apiHandle, configPath, CONTROL_PREFIX);
+	return CtlLoadMetaData(apiHandle, configPath);
 }
 
 static int CtrlCreateApi(afb_api_t apiHandle, CtlConfigT *ctrlConfig) {
