@@ -104,13 +104,14 @@ done
 
 # Terminate the App
 afm-util kill $pid > /dev/null
-afm-util remove $APP > /dev/null
-rm ${AFM_PLATFORM_RUNDIR}/${APP}.env 2> /dev/null
 
 find "${APP_HOME}" -name '*tap' -exec \
 sed -r -e '/^# (S| +)/d' \
 --e '1d' \
 --e 's:^ok +([0-9]+)\t+(.*):PASS\: \1 \2:' \
 --e 's:^not ok +([0-9]+)\t+(.*):FAIL\: \1 \2:' {} \;
+
+afm-util remove $APP > /dev/null
+rm ${AFM_PLATFORM_RUNDIR}/${APP}.env 2> /dev/null
 
 info "$APP killed and removed"
