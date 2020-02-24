@@ -364,9 +364,9 @@ end
 
 function _AFT.assertVerbSkipped(api, verb, args, cb, msg)
 	if(msg) then
-		lu.skipIf(not _AFT.assertVerb(api, verb, args, cb), "Test is skipped because "..msg)
+		lu.skip("Test ("..api..", "..verb..", "..args..", "..cb..") is skipped because "..msg)
 	else
-		lu.skipIf(not _AFT.assertVerb(api, verb, args, cb), "Test is skipped")
+		lu.skip("Test ("..api..", "..verb..", "..args..", "..cb..") is skipped")
 	end
 end
 
