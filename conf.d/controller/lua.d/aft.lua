@@ -622,32 +622,17 @@ for _, v in pairs( _AFT_list_of_funcs ) do
 	_AFT[alias] = _AFT[funcname]
 end
 
-local function call_tests()
-	AFB:success(_AFT.context, { info = "Launching tests"})
-	lu.LuaUnit:runSuiteByInstances(_AFT.tests_list)
-
-	local success ="Success : "..tostring(lu.LuaUnit.result.successCount)
-	local skipped ="Skipped : "..tostring(lu.LuaUnit.result.skippedCount)
-	local failures="Failures : "..tostring(lu.LuaUnit.result.failureCount)
-
-	local evtHandle = AFB:evtmake(_AFT.context, 'results')
-	--if type(evtHandle) == "userdata" then
-	--	AFB:subscribe(_AFT.context,evtHandle)
-	--	AFB:evtpush(_AFT.context,evtHandle,{info = success.." "..failures})
-	--end
-end
-
 local function process_tests()
 	-- Execute the test within a context if given. We assume that the before
 	-- function success returning '0' else we abort the whole test procedure
 	if _AFT.beforeAll then
 		if _AFT.beforeAll() == 0 then
-			call_tests()
+			lu.LuaUnit:runSuiteByInstances(_AFT.tests_list)
 		else
 			AFB:fail(_AFT.context, { info = "Can't set the context to execute the tests correctly. Look at the log and retry."})
 		end
 	else
-		call_tests()
+		lu.LuaUnit:runSuiteByInstances(_AFT.tests_list)
 	end
 
 	-- Keep the context unset function to be executed after all no matter if
@@ -657,6 +642,8 @@ local function process_tests()
 			print('Unsetting the tests context failed.')
 		end
 	end
+
+	return lu.LuaUnit.result.successCount, lu.LuaUnit.result.skippedCount, lu.LuaUnit.result.failureCount
 end
 
 local function readOneFile(f)
@@ -690,16 +677,27 @@ function _launch_test(context, confArgs, queryArgs)
 		end
 	end
 
+	--local success = lu.LuaUnit.result.successCount
+	local success = 0
+	local skipped = 0
+	local failures= 0
+
 	if confArgs.files and type(confArgs.files) == 'table' then
 		for _,f in pairs(confArgs.files) do
+			local su  = 0
+			local sk = 0
+			local fa  = 0
 			_AFT.setOutputFile(f)
 			readOneFile(f)
-			process_tests()
+			su, sk, fa = process_tests()
 			_AFT.beforeEach = nil
 			_AFT.afterEach = nil
 			_AFT.beforeAll = nil
 			_AFT.afterAll = nil
 			_AFT.tests_list = {}
+			success = success + su
+			skipped = skipped + sk
+			failures = failures + fa
 			if _AFT.lavaOutput then
 				print("<LAVA_SIGNAL_TESTSET STOP>")
 			end
@@ -707,7 +705,9 @@ function _launch_test(context, confArgs, queryArgs)
 	elseif type(confArgs.files) == 'string' then
 		_AFT.setOutputFile(confArgs.files)
 		readOneFile(confArgs.files)
-		process_tests()
+		success, skipped, failures = process_tests()
 	end
+
+	AFB:success(_AFT.context, {Success = success, Skipped = skipped, Failures = failures, info = "Tests finished: " .. AFB:getuid(_AFT.context)})
 	if _AFT.exit[1] == 1 then os.exit(_AFT.exit[2]) end
 end
