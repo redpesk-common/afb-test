@@ -363,11 +363,14 @@ function _AFT.assertVerb(api, verb, args, cb)
 end
 
 function _AFT.assertVerbSkipped(api, verb, args, cb, msg)
-	if(msg) then
-		lu.skip("Test ("..api..", "..verb..", "..args..", "..cb..") is skipped because "..msg)
-	else
-		lu.skip("Test ("..api..", "..verb..", "..args..", "..cb..") is skipped")
-	end
+        _AFT.assertIsString(api)
+        _AFT.assertIsString(verb)
+        _AFT.assertIsTable(args)
+        if(msg) then
+                lu.skip("Test ("..api..", "..verb..", "..Dump_Table(args)..", "..tostring(cb)..") is skipped because "..msg)
+        else
+                lu.skip("Test ("..api..", "..verb..", "..Dump_Table(args)..", "..tostring(cb)..") is skipped")
+        end
 end
 
 function _AFT.assertVerbError(api, verb, args, cb)
