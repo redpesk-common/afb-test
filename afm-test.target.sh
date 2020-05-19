@@ -102,8 +102,12 @@ pid=$(afm-util start $APP)
 [[ -z "$pid" || ! -e "/proc/$pid" ]] || info "$APP started with pid=$pid"
 
 if [[ "$pid" ]]; then
-	while kill -0 $pid &> /dev/null; do
-		sleep 0.2
+	kill -0 $pid
+	RUNNING=$?
+	while [[ $RUNNING -eq 0 ]]
+	do
+		kill -0 $pid 2> /dev/null
+		RUNNING=$?
 	done
 fi
 
