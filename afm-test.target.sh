@@ -114,11 +114,20 @@ fi
 # Terminate the App if not already dead
 [[ "$pid" && -d /proc/$pid ]] && afm-util kill $pid > /dev/null
 
+# Quick and dirty fix waiting for a fix on appfw main to correctly get
+# the pid and waiting on it instead of the resulting files.
+timeout=20
+while test ! -f ${APP_HOME}/*.tap; do
+	sleep 0.1
+	timeout=$((timeout-1))
+	[[ $timeout == 0 ]] && break
+done
+
 find "${APP_HOME}" -name '*tap' -exec \
 sed -r -e '/^# (S| +)/d' \
---e '1d' \
---e 's:^ok +([0-9]+)\t+(.*):PASS\: \1 \2:' \
---e 's:^not ok +([0-9]+)\t+(.*):FAIL\: \1 \2:' {} \;
+-e '1d' \
+-e 's:^ok +([0-9]+)\t+(.*):PASS\: \1 \2:' \
+-e 's:^not ok +([0-9]+)\t+(.*):FAIL\: \1 \2:' {} \;
 
 [[ "$WGT" ]] && afm-util remove $APP > /dev/null
 rm ${AFM_PLATFORM_RUNDIR}/${APP}.env 2> /dev/null
