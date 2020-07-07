@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###########################################################################
-# Copyright (C) 2017, 2018 IoT.bzh
+# Copyright (C) 2017, 2018, 2020 IoT.bzh
 #
 # Author: Romain Forlot <romain.forlot@iot.bzh>
 #
@@ -20,7 +20,9 @@
 
 trap "cleanNexit 1" SIGHUP SIGINT SIGABRT SIGTERM
 cleanNexit() {
-	rm -f "$SOCKETSERVICE" 2> /dev/null
+	for A in ${APIs};do
+		rm -f /tmp/${A} 2> /dev/null
+	done
 	trap '' EXIT SIGHUP SIGINT SIGABRT SIGTERM
 	if [ $1 -ne 0 ]
 	then
@@ -115,7 +117,9 @@ TESTAPINAME=$(grep '\"api\"' "${TESTCFGFILE}" | cut -d'"' -f4)
 	cleanNexit 5
 TESTPROCNAME="afbd-$(grep -Eo 'id=".*" ' "${TESTPACKAGEDIR}/config.xml" | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]')"
 
-API=$(grep "provided-api" "${SERVICEPACKAGEDIR}/config.xml" -A1 2> /dev/null |  sed -r -e '1d' -e 's:.*"(.*)" v.*:\1:' 2> /dev/null)
+APIs=$(sed '/feature.*provided-api/,/feature/!d' "${SERVICEPACKAGEDIR}/config.xml" | grep -v feature| sed -r -e 's:.*"(.*)" v.*:\1:')
+API=$(echo $APIs | cut -d" " -f1)
+
 [ -z "$API" ] && [ "$MODE" = "SERVICE" ] && \
 	echo "Error: you doesn't have the config.xml file. Please call 'make widget'" && \
 	cleanNexit 2
@@ -126,7 +130,12 @@ declare AFT_$(echo ${ENV_API} | sed 's:[^a-zA-Z0-9_]:_:g')_PLUGIN_PATH="${SERVIC
 export AFT_${ENV_API}_CONFIG_PATH
 export AFT_${ENV_API}_PLUGIN_PATH
 PROCNAME="afbd-$(grep -Eo 'id=".*" ' "${SERVICEPACKAGEDIR}/config.xml" | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]')"
-SOCKETSERVICE="/tmp/$API"
+SOCKETCLIENT="";
+SOCKETSERVER="";
+for A in ${APIs};do
+  SOCKETCLIENT="${SOCKETCLIENT} --ws-client=unix:/tmp/${A} ";
+  SOCKETSERVER="${SOCKETSERVER} --ws-server=unix:/tmp/${A} ";
+done
 
 declare -a testVerb
 
@@ -182,7 +191,7 @@ then
 				--port=${PORTSERVICE} \
 				--ldpaths=. \
 				-vvv \
-				--ws-server=unix:"${SOCKETSERVICE}" &> "${LOGFILESERVICE}" &
+				$(echo -e "${SOCKETSERVER}") &> "${LOGFILESERVICE}" &
 
 	sleep 0.3
 
@@ -193,7 +202,7 @@ then
 				--token=${TOKEN} \
 				--workdir="${TESTPACKAGEDIR}" \
 				--binding="${AFBTEST}" \
-				--ws-client=unix:"${SOCKETSERVICE}" \
+				$(echo -e "${SOCKETCLIENT}") \
 				$(echo -e "${testVerbCalls}") \
 				--call="${TESTAPINAME}/exit:{}" \
 				-vvv &> "${LOGFILETEST}"
