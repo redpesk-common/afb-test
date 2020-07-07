@@ -2,26 +2,26 @@
 # spec file for package app-afb-test
 #
 
-%define _prefix /opt/AGL
+%define _prefix /opt/RP
 %define __cmake cmake
 
 %if 0%{?fedora_version}
 %global debug_package %{nil}
 %endif
 
-Name:           agl-app-afb-test
+Name:           rp-app-afb-test
 # WARNING {name} is not used for tar file name in source nor for setup
 #         Check hard coded values required to match git directory naming
 Version:        2.0
 Release:        0
 License:        Apache-2.0
-Summary:        AGL app-afb-test
+Summary:        RP app-afb-test
 Group:          Development/Libraries/C and C++
 Url:            https://gerrit.automotivelinux.org/gerrit/#/admin/projects/apps/app-afb-test
 Source:         app-afb-test-%{version}.tar.gz
 BuildRequires:  pkgconfig(lua) >= 5.3
 BuildRequires:  cmake
-BuildRequires:  agl-cmake-apps-module
+BuildRequires:  rp-cmake-apps-module
 BuildRequires:  gcc-c++
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(afb-daemon)
@@ -39,7 +39,7 @@ afb-test is a test framework made to test other binding.
 Group:          Development/Libraries/C and C++
 Requires:       %{name} = %{version}
 Provides:       pkgconfig(%{name}) = %{version}
-Summary:        AGL app-afb-test-devel
+Summary:        RP app-afb-test-devel
 %description devel
 afb-test is a test framework made to test other binding.
 
@@ -69,7 +69,6 @@ cmake -DCMAKE_BUILD_TYPE=DEBUG -DVERSION=%{version} ..
 %dir %{_prefix}
 %dir %{_prefix}
 %dir %{_prefix}/afTest/
-%dir %{_prefix}/afTest/
 %dir %{_prefix}/afTest/etc
 %{_prefix}/afTest/etc/aft-afbtest.json
 %dir %{_prefix}/afTest/bin
@@ -80,9 +79,13 @@ cmake -DCMAKE_BUILD_TYPE=DEBUG -DVERSION=%{version} ..
 %{_prefix}/afTest/var/aft.lua
 %{_prefix}/afTest/var/luaunit.lua
 
+%dir %{_prefix}/afTest-test/etc/
+%dir %{_prefix}/afTest-test/var
+%{_prefix}/afTest-test/etc/*
+%{_prefix}/afTest-test/var/*
+
 %files devel
 %defattr(-,root,root)
-%dir %{_prefix}
 %dir %{_libdir}/pkgconfig
 %{_libdir}/pkgconfig/*.pc
 
