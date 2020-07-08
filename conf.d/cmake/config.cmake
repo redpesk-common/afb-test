@@ -78,7 +78,7 @@ set (PKG_REQUIRED_LIST
 # Prefix path where will be installed the files
 # Default: /usr/local (need root permission to write in)
 # ------------------------------------------------------
-set(INSTALL_PREFIX /opt/AGL CACHE PATH "INSTALL PREFIX PATH")
+set(INSTALL_PREFIX /opt/RP CACHE PATH "INSTALL PREFIX PATH")
 
 # Customize link option
 # -----------------------------
@@ -190,7 +190,7 @@ set(AFB_REMPORT "1234" CACHE PATH "Default binder listening port")
 
 # Print a helper message when every thing is finished
 # ----------------------------------------------------
-set(CLOSING_MESSAGE "Typical binding launch: afb-daemon --name ${PROJECT_NAME} --port=${AFB_REMPORT} --workdir=package-test --ldpaths=/opt/AGL/lib64/afb:../package/lib --token=\"${AFB_TOKEN}\"")
+set(CLOSING_MESSAGE "Typical binding launch: afb-daemon --name ${PROJECT_NAME} --port=${AFB_REMPORT} --workdir=package-test --ldpaths=/opt/RP/lib64/afb:../package/lib --token=\"${AFB_TOKEN}\"")
 set(PACKAGE_MESSAGE "Install widget file using in the target : afm-util install ${PROJECT_NAME}.wgt")
 
 # Optional schema validator about now only XML, LUA and JSON

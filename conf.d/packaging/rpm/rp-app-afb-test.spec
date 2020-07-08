@@ -26,6 +26,7 @@ BuildRequires:  gcc-c++
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(afb-daemon)
 BuildRequires:  pkgconfig(appcontroller)
+BuildRequires:  pkgconfig(ctl-utilities)
 BuildRequires:  pkgconfig(afb-helpers)
 BuildRequires:  pkgconfig(libsystemd) >= 222
 Requires:       jq
@@ -67,22 +68,30 @@ cmake -DCMAKE_BUILD_TYPE=DEBUG -DVERSION=%{version} ..
 %dir %{_bindir}
 %{_bindir}/afm-test
 %dir %{_prefix}
-%dir %{_prefix}
-%dir %{_prefix}/afTest/
-%dir %{_prefix}/afTest/etc
-%{_prefix}/afTest/etc/aft-afbtest.json
-%dir %{_prefix}/afTest/bin
-%dir %{_prefix}/afTest/lib
-%{_prefix}/afTest/lib/aft.so
-%dir %{_prefix}/afTest/htdocs
-%dir %{_prefix}/afTest/var
-%{_prefix}/afTest/var/aft.lua
-%{_prefix}/afTest/var/luaunit.lua
 
-%dir %{_prefix}/afTest-test/etc/
-%dir %{_prefix}/afTest-test/var
-%{_prefix}/afTest-test/etc/*
-%{_prefix}/afTest-test/var/*
+%dir %{_prefix}/afb-test/
+%dir %{_prefix}/afb-test/etc
+%dir %{_prefix}/afb-test/lib
+%dir %{_prefix}/afb-test/var
+%{_prefix}/afb-test/etc/aft-afbtest.json
+%{_prefix}/afb-test/lib/aft.so
+%{_prefix}/afb-test/var/aft.lua
+%{_prefix}/afb-test/var/luaunit.lua
+
+%dir %{_prefix}/afb-test-test/
+%dir %{_prefix}/afb-test-test/etc
+%{_prefix}/afb-test-test/etc/aft-aftest-selftest.json
+%dir %{_prefix}/afb-test-test/bin
+%dir %{_prefix}/afb-test-test/lib
+
+%dir %{_prefix}/afb-test-test/htdocs
+%dir %{_prefix}/afb-test-test/var
+%{_prefix}/afb-test-test/var/aftTest.lua
+%{_prefix}/afb-test-test/var/helloworld.lua
+%{_prefix}/afb-test-test/var/mapi_low-can.lua
+%{_prefix}/afb-test-test/var/mapi_tests.lua
+
+
 
 %files devel
 %defattr(-,root,root)

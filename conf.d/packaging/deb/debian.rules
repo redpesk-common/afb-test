@@ -9,10 +9,10 @@ export VERSION=$(shell grep -E "^Version" $(shell find .. -name BUILD -prune -ty
 	dh $@
 
 override_dh_auto_configure:
-	dh_auto_configure -- -DVERSION=${VERSION} -DCMAKE_INSTALL_PREFIX=/opt/AGL -DCMAKE_INSTALL_LIBDIR:PATH=lib/${DEB_HOST_MULTIARCH}
+	dh_auto_configure -- -DVERSION=${VERSION} -DCMAKE_INSTALL_PREFIX=/opt/RP -DCMAKE_INSTALL_LIBDIR:PATH=lib/${DEB_HOST_MULTIARCH}
 
 override_dh_auto_install:
 	dh_auto_install --destdir=/usr/src/packages/BUILD/debian/tmp
-	mkdir -p debian/tmp/opt/AGL/
+	mkdir -p debian/tmp/opt/RP/
 
 override_dh_auto_test:

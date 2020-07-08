@@ -1,6 +1,6 @@
 Format: 1.0
-Source: agl-app-afb-test
-Binary: agl-app-afb-test-bin, agl-app-afb-test-dev
+Source: rp-app-afb-test
+Binary: rp-app-afb-test-bin, rp-app-afb-test-dev
 Architecture: any
 Version: 2.0-0
 Maintainer: romain.forlot <romain.forlot@iot.bzh>
@@ -10,11 +10,11 @@ Build-Depends: debhelper (>= 5),
  pkg-config,
  dpkg-dev,
  cmake,
- agl-libappcontroller-dev,
- agl-libafb-helpers-dev,
- agl-cmake-apps-module-bin,
- agl-app-framework-binder-bin,
- agl-app-framework-binder-dev,
+ rp-libappcontroller-dev,
+ rp-libafb-helpers-dev,
+ rp-cmake-apps-module-bin,
+ rp-app-framework-binder-bin,
+ rp-app-framework-binder-dev,
  lua5.3,
  liblua5.3-dev,
  libjson-c-dev,

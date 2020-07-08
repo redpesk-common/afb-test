@@ -1,2 +1,2 @@
-/opt/AGL/afTest/*
-/opt/AGL/bin/afm-test
+/opt/RP/afb-test*
+/opt/RP/bin/afm-test
