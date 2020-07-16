@@ -22,7 +22,7 @@ trap cleanup SIGTERM SIGINT SIGABRT SIGHUP
 
 function cleanup() {
 	afm-util kill $pid >&2
-	afm-util remove $APP >&2
+	[[ "$WGT" ]] && afm-util remove $APP >&2
 	rm ${AFM_PLATFORM_RUNDIR}/${APP}.env 2> /dev/null
 	exit 1
 }
@@ -67,16 +67,25 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-# check application name passed as first arg
-WGT=$1
-[[ -z "$WGT" ]] && { usage; exit 0;}
-[[ ! -f "$WGT" ]] && { usage; exit 0;}
+function wgt_install {
+	# check application name passed as first arg
+	WGT=$1
+	[[ -z "$WGT" ]] && { usage; exit 0;}
+	[[ ! -f "$WGT" ]] && { usage; exit 0;}
 
-INSTALL=$(afm-util install $WGT)
-APP=$(echo $INSTALL | jq -r .added)
+	INSTALL=$(afm-util install $WGT)
+	APP=$(echo $INSTALL | jq -r .added)
+}
+
+if afm-util info $1 &> /dev/null; then
+	APP=$1
+else
+	wgt_install $1
+fi
+
 AFM_PLATFORM_RUNDIR=/run/platform/debug/
 [[ "$APP" == "null" ]] && error "Widget contains error. Abort"
-APP_HOME=${HOME}/app-data/$(echo ${APP} |cut -d'@' -f1)
+APP_HOME=/home/$(id -u)/app-data/$(echo ${APP} |cut -d'@' -f1)
 
 # Clean the old test results
 find "${APP_HOME}" -name '*tap' -exec rm -f {} \;
@@ -90,20 +99,16 @@ EOF
 
 # ask appfw to start application
 pid=$(afm-util start $APP)
-[[ -z "$pid" || ! -e "/proc/$pid" ]] && error "Failed to start application $APP"
-info "$APP started with pid=$pid"
+[[ -z "$pid" || ! -e "/proc/$pid" ]] || info "$APP started with pid=$pid"
 
-kill -0 $pid
-RUNNING=$?
-while [[ $RUNNING -eq 0 ]]
-do
-	kill -0 $pid 2> /dev/null
-	RUNNING=$?
-	sleep 0.2
-done
+if [[ "$pid" ]]; then
+	while kill -0 $pid &> /dev/null; do
+		sleep 0.2
+	done
+fi
 
-# Terminate the App
-afm-util kill $pid > /dev/null
+# Terminate the App if not already dead
+[[ "$pid" && -d /proc/$pid ]] && afm-util kill $pid > /dev/null
 
 find "${APP_HOME}" -name '*tap' -exec \
 sed -r -e '/^# (S| +)/d' \
@@ -111,7 +116,7 @@ sed -r -e '/^# (S| +)/d' \
 --e 's:^ok +([0-9]+)\t+(.*):PASS\: \1 \2:' \
 --e 's:^not ok +([0-9]+)\t+(.*):FAIL\: \1 \2:' {} \;
 
-afm-util remove $APP > /dev/null
+[[ "$WGT" ]] && afm-util remove $APP > /dev/null
 rm ${AFM_PLATFORM_RUNDIR}/${APP}.env 2> /dev/null
 
-info "$APP killed and removed"
+[[ "$WGT" ]] && info "$APP killed and removed" || info "$APP killed"
