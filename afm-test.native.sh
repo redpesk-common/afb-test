@@ -45,12 +45,13 @@ cleanNexit() {
 
 function usage() {
 	cat >&2 << EOF
-Usage: $0 <binding-wgt-rootdir> <test-wgt-rootdir> [-m|--mode <SOLO|SERVICE>] [-t|--timeout <X>] [-l|--lavaoutput]
+Usage: $0 <binding-wgt-rootdir> <test-wgt-rootdir> [-m|--mode <SOLO|SERVICE>] [-t|--timeout <X>] [-l|--lavaoutput] [-c|--coverage]
 binding-wgt-rootdir: path to the test wgt file
 test-wgt-rootdir: path to the test folder file
 -m|--mode: SOLO (1 binder) or SERVICE (2 binders) (Default: SOLO)
 -t|--timeout: timeout in second. (Default 3 seconds)
 -l|--lavaoutput: Flags indicating the binding to add Lava special test markers.
+-c|--coverage: Deploy coverage reports once the tests are completed.
 EOF
 }
 
@@ -84,6 +85,10 @@ case $key in
 	shift # past argument
 	shift # past value
 	;;
+    -c|--coverage)
+	COVERAGE="TRUE"
+    shift # past argument
+    ;;
 	*)
 	POSITIONAL+=("$1") # save it in an array for later
 	shift # past argument
@@ -109,6 +114,7 @@ fi
 
 [ -z "$MODE" ] && MODE="SOLO"
 [ -z "$TIMEOUT" ] && TIMEOUT=3
+COVERAGE_PATH="coverage"
 
 TESTCFGFILE=$(find "${TESTPACKAGEDIR}" -name "aft-*.json" -print | head -n1)
 TESTAPINAME=$(grep '\"api\"' "${TESTCFGFILE}" | cut -d'"' -f4)
@@ -210,6 +216,57 @@ else
 	echo "Error: No mode selected. Choose between SOLO or SERVICE"
 	usage
 	cleanNexit 3
+fi
+
+if [ "${COVERAGE}" = "TRUE" ]
+then
+    echo ""
+    echo "INFO : Deploying coverage reports in $(readlink -f ${COVERAGE_PATH})"
+
+    mkdir -p "${COVERAGE_PATH}"
+    cd "${COVERAGE_PATH}"
+    rm -rf ./*
+
+    LCOV_VERSION=$(lcov --version | awk '{print $4}' | tr -d '.')
+
+    if [ $LCOV_VERSION -eq 10 ]
+    then
+            lcov --directory .. \
+                --capture \
+                --exclude "/usr/include/*" \
+                --exclude "/opt/*" \
+                --exclude "*/libs/*" \
+                --exclude "*/test/*" \
+                --exclude "*/tests/*" \
+                --exclude "*/plugins/*" \
+                --exclude="*/afb-helpers/*" \
+                --exclude="*/ctl-utilities/*" \
+                --exclude "*/app-afb-helpers-submodule/*" \
+                --exclude "*/app-controller-submodule/*" \
+                --output-file coverage.info
+    else
+            lcov --directory .. \
+                --capture \
+                --output-file full_coverage.info
+            lcov --remove full_coverage.info \
+                        '/usr/include/*' \
+                        '/opt/*' \
+                        '*/libs/*' \
+                        '*/test/*' \
+                        '*/tests/*' \
+                        '*/plugins/*' \
+                        '*/afb-helpers/*' \
+                        '*/ctl-utilities/*' \
+                        '*/app-afb-helpers-submodule/*' \
+                        '*/app-controller-submodule/*' \
+                --output-file coverage.info
+    fi
+
+    genhtml coverage.info
+
+    cd ..
+    tar czf coverage.tar.gz "${COVERAGE_PATH}"
+    echo ""
 fi
 
 cleanNexit $?
