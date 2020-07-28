@@ -85,10 +85,10 @@ case $key in
 	shift # past argument
 	shift # past value
 	;;
-    -c|--coverage)
+	-c|--coverage)
 	COVERAGE="TRUE"
-    shift # past argument
-    ;;
+	shift # past argument
+	;;
 	*)
 	POSITIONAL+=("$1") # save it in an array for later
 	shift # past argument
