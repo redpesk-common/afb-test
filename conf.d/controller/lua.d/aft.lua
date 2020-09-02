@@ -685,6 +685,9 @@ function _launch_test(context, confArgs, queryArgs)
 	local skipped = 0
 	local failures= 0
 
+	--Reset tests list each time
+	_AFT.tests_list = {}
+
 	if confArgs.files and type(confArgs.files) == 'table' then
 		for _,f in pairs(confArgs.files) do
 			local su  = 0
