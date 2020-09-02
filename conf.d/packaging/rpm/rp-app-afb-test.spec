@@ -30,6 +30,7 @@ BuildRequires:  pkgconfig(ctl-utilities)
 BuildRequires:  pkgconfig(afb-helpers)
 BuildRequires:  pkgconfig(libsystemd) >= 222
 Requires:       jq
+Requires:	lcov
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 
