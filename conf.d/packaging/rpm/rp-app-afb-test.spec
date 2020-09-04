@@ -17,7 +17,7 @@ Release:        0
 License:        Apache-2.0
 Summary:        RP app-afb-test
 Group:          Development/Libraries/C and C++
-Url:            https://gerrit.automotivelinux.org/gerrit/#/admin/projects/apps/app-afb-test
+Url:            http://git.ovh.iot/redpesk/redpesk-core/app-afb-test.git
 Source:         app-afb-test-%{version}.tar.gz
 BuildRequires:  pkgconfig(lua) >= 5.3
 BuildRequires:  cmake
