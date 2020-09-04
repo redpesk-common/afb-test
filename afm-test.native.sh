@@ -200,7 +200,7 @@ then
 				$(echo -e "${SOCKETSERVER}") \
 				-vvv \
 				&> "${LOGFILESERVICE}" &
-
+	B_PID=$(pidof ${PROCNAME})
 	sleep 0.3
 
 	timeout -s 9 ${TIMEOUT} ${BINDER} --name="${TESTPROCNAME}" \
@@ -215,6 +215,9 @@ then
 				--call="${TESTAPINAME}/exit:{}" \
 				-vvv \
 				&> "${LOGFILETEST}"
+
+	kill -2 ${B_PID}
+	tail --pid=${B_PID} -f /dev/null
 else
 	echo "Error: No mode selected. Choose between SOLO or SERVICE"
 	usage
