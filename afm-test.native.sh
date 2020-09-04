@@ -186,18 +186,20 @@ then
 			--binding="${AFBTEST}" \
 			$(echo -e "${testVerbCalls}") \
 			--call="${TESTAPINAME}/exit:{}" \
-			-vvv &> "${LOGFILETEST}"
+			-vvv \
+			&> "${LOGFILETEST}"
 elif [ ${MODE} = "SERVICE" ]
 then
 	pkill "$TESTPROCNAME"
 	pkill "$PROCNAME"
 
-	timeout -s 9 ${TIMEOUT} ${BINDER} --name="${PROCNAME}" \
-				--workdir="${SERVICEPACKAGEDIR}" \
+	timeout -s 2 ${TIMEOUT} ${BINDER} --name="${PROCNAME}" \
 				--port=${PORTSERVICE} \
+				--workdir="${SERVICEPACKAGEDIR}" \
 				--ldpaths=. \
+				$(echo -e "${SOCKETSERVER}") \
 				-vvv \
-				$(echo -e "${SOCKETSERVER}") &> "${LOGFILESERVICE}" &
+				&> "${LOGFILESERVICE}" &
 
 	sleep 0.3
 
@@ -211,7 +213,8 @@ then
 				$(echo -e "${SOCKETCLIENT}") \
 				$(echo -e "${testVerbCalls}") \
 				--call="${TESTAPINAME}/exit:{}" \
-				-vvv &> "${LOGFILETEST}"
+				-vvv \
+				&> "${LOGFILETEST}"
 else
 	echo "Error: No mode selected. Choose between SOLO or SERVICE"
 	usage
