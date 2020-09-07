@@ -5,7 +5,7 @@
 export VERSION=$(shell grep -E "^Version" $(shell find .. -name BUILD -prune -type d -o -name *dsc -print | head -n1) | sed -r 's/^.*: (.*)-.*/\1/')
 
 %:
-	bash /etc/profile.d/agl-app-framework-binder.sh
+	bash /etc/profile.d/rp-app-framework-binder.sh
 	dh $@
 
 override_dh_auto_configure:
