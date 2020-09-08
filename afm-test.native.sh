@@ -200,8 +200,9 @@ then
 				$(echo -e "${SOCKETSERVER}") \
 				-vvv \
 				&> "${LOGFILESERVICE}" &
-	B_PID=$(pidof ${PROCNAME})
+
 	sleep 0.3
+	B_PID=$(pidof ${PROCNAME})
 
 	timeout -s 9 ${TIMEOUT} ${BINDER} --name="${TESTPROCNAME}" \
 				--port="${PORT}" \
