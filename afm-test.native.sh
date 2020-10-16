@@ -417,45 +417,26 @@ do_coverage() {
 	cd "${COVERAGE_PATH}" || exit
 	rm -rf ./*
 
-	LCOV_VERSION=$(lcov --version | awk '{print $4}' | tr -d '.')
+	lcov --directory .. \
+		--capture \
+		--output-file full_coverage.info \
+		> lcov.log
 
-	#Who use lcov in version 10?
-	if [ "${LCOV_VERSION}" -eq 10 ]
-	then
-			lcov --directory .. \
-				--capture \
-				--exclude "/usr/include/*" \
-				--exclude "/opt/*" \
-				--exclude "*/libs/*" \
-				--exclude "*/test/*" \
-				--exclude "*/tests/*" \
-				--exclude "*/plugins/*" \
-				--exclude="*/afb-helpers/*" \
-				--exclude="*/ctl-utilities/*" \
-				--exclude "*/app-afb-helpers-submodule/*" \
-				--exclude "*/app-controller-submodule/*" \
+	sed -i -e 's/,-1$/,0/g' full_coverage.info
+
+	lcov --remove full_coverage.info \
+				'/usr/include/*' \
+				'/opt/*' \
+				'*/libs/*' \
+				'*/test/*' \
+				'*/tests/*' \
+				'*/plugins/*' \
+				'*/afb-helpers/*' \
+				'*/ctl-utilities/*' \
+				'*/app-afb-helpers-submodule/*' \
+				'*/app-controller-submodule/*' \
 				--output-file coverage.info \
-				> lcov.log
-	else
-			lcov --directory .. \
-				--capture \
-				--output-file full_coverage.info \
-				> lcov.log
-
-			lcov --remove full_coverage.info \
-						'/usr/include/*' \
-						'/opt/*' \
-						'*/libs/*' \
-						'*/test/*' \
-						'*/tests/*' \
-						'*/plugins/*' \
-						'*/afb-helpers/*' \
-						'*/ctl-utilities/*' \
-						'*/app-afb-helpers-submodule/*' \
-						'*/app-controller-submodule/*' \
-						--output-file coverage.info \
-						>> lcov.log
-	fi
+				>> lcov.log
 
 	if [ "${DBG_MODE}" = "TRUE" ];then
 		cat lcov.log
