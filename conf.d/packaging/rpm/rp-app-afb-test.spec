@@ -81,7 +81,7 @@ cmake -DCMAKE_BUILD_TYPE=DEBUG -DVERSION=%{version} ..
 
 %dir %{_prefix}/afb-test-test/
 %dir %{_prefix}/afb-test-test/etc
-%{_prefix}/afb-test-test/etc/aft-aftest-selftest.json
+%{_prefix}/afb-test-test/etc/aft-afb-test-selftest.json
 %dir %{_prefix}/afb-test-test/bin
 %dir %{_prefix}/afb-test-test/lib
 
