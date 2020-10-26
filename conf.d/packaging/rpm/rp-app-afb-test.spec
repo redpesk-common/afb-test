@@ -13,7 +13,7 @@ Name:           rp-app-afb-test
 # WARNING {name} is not used for tar file name in source nor for setup
 #         Check hard coded values required to match git directory naming
 Version:        2.0
-Release:        0
+Release:        1
 License:        Apache-2.0
 Summary:        RP app-afb-test
 Group:          Development/Libraries/C and C++
@@ -26,7 +26,6 @@ BuildRequires:  gcc-c++
 BuildRequires:  pkgconfig(json-c)
 BuildRequires:  pkgconfig(afb-daemon)
 BuildRequires:  pkgconfig(appcontroller)
-BuildRequires:  pkgconfig(ctl-utilities)
 BuildRequires:  pkgconfig(afb-helpers)
 BuildRequires:  pkgconfig(libsystemd) >= 222
 Requires:       jq
