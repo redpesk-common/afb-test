@@ -1,0 +1,24 @@
+type: books
+books:
+-
+    id: binding-tests-doc
+    title: Binding Tests
+    description: Binding tests documentation
+    keywords:
+    author: "IotBzh"
+    version: master
+    chapters:
+        - url: 0_Installation.md
+          name: Installation
+        - url: 1_Write_the_tests.md
+          name: Write the tests
+        - url: 2_The_test_widget.md
+          name: The test widget
+        - url: 3_Launch_the_tests.md
+          name: Launch the tests
+        - url: 4_Tests_Examples.md
+          name: Tests examples
+        - url: 5_C-api-functions.md
+          name: C API Functions
+        - url: 6_Lua-api-functions.md
+          name: Lua API Functions
