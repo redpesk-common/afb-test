@@ -70,9 +70,9 @@ set (gcc_minimal_version 4.9)
 set (PKG_REQUIRED_LIST
 	json-c
 	libsystemd>=222
-	afb-daemon>=4.0
-	appcontroller
-	afb-helpers
+	afb-binding
+	afb-libcontroller
+	afb-libhelpers
 )
 
 # Prefix path where will be installed the files
