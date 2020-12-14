@@ -6,29 +6,29 @@ At the root of your project, create a test-dedicated directory that holds
 all your test materials. A classic test tree looks like the following:
 
 ```tree
- test
- ├── CMakeLists.txt
- └── afb-test
-     ├── CMakeLists.txt
-     ├── etc
-     │   ├── CMakeLists.txt
-     │   └── aft-agl-middlename.json
-     ├── fixtures
-     │   ├── CMakeLists.txt
-     │   ├── helper.sh
-     │   ├── data
-     │   └── plugin.lua
-     └── tests
-         ├── CMakeLists.txt
-         ├── test01.lua
-         ├── test02.lua
-         └── test03.lua
+test
+├── CMakeLists.txt
+├── afb-test
+└── CMakeLists.txt
+    ├── etc
+    │   ├── CMakeLists.txt
+    │   └── aft-middlename.json
+    ├── fixtures
+    │   ├── CMakeLists.txt
+    │   ├── helper.sh
+    │   ├── data
+    │   └── plugin.lua
+    └── tests
+        ├── CMakeLists.txt
+        ├── test01.lua
+        ├── test02.lua
+        └── test03.lua
  ...
 ```
 
 Here is a description of each subdirectory purpose:
 
-- *etc*`: Holds the test binding configuration in a JSON file.
+- *etc*: Holds the test binding configuration in a JSON file.
 - *fixtures*: contains all external needed files to run your tests.
   This subdirectory is primarily used to inject data or a plugin
   with the mock-up APIs code in a LUA or C plugin.
@@ -82,7 +82,7 @@ name that is executed when the verb is called.
   is executes when the verb is called. The format of the action URI is:
  `<lua|plugin|api>`://`<C plugin's name|api's name|lua script name>`#`<function|verb's name>`
 
-#### `events` section.
+#### `events` section
 
 Allows you to trigger a function when a described event is received.
 The trigger can be for any event on which you need to apply modifications.
@@ -200,8 +200,8 @@ need more functions, use the ones that call a callback. If the test is more comp
 more comprehensive then *describe* your test function using *assert* functions.
 Following is an example.
 
-See the test framework functions [References](Reference/0_BindingTestFunctions.html) for a
-comprehensive list of available *tests* and *assertions* functions.
+See the test framework functions ["References"](./5_References-functions.html) for a
+comprehensive list of available *tests* and *assertions* functions:
 
 ### Tests example
 

@@ -1,12 +1,11 @@
-# How to build the test widget using app-templates/cmake-apps-module
+# How to build the test binding using "AFB CMake Modules"
 
 ## Defining CMake targets
 
 Now that the test tree has been created, in each directory you have to create
 a `CMakeLists.txt` file to hold the CMake's target definition. For each target
 you need to specify a **LABELS** depending on the purpose of the files for each
-directory. There are more explanations about using the *cmake-apps-module* (the
-former *app-templates* submodule) in the [documentation website](../../../devguides/reference/cmakeafbtemplates/dev_guide/advanced-usage.html).
+directory. There are more explanations about using the *afb-cmake-modules* in the ["AFB CMake Modules"](../developer-guides/cmakeafbtemplates/dev_guide/cmake-overview.html) chapter.
 
 Here is a cheat sheet to map the **LABELS** target for each classic test tree
 directory:
@@ -18,48 +17,37 @@ directory:
 i.e for the `etc` folder:
 
 ```cmake
-PROJECT_TARGET_ADD(afb-test-config)
+PROJECT_TARGET_ADD(helloworld-config)
 
     file(GLOB CONF_FILES "*.json")
 
     add_input_files("${CONF_FILES}")
 
     SET_TARGET_PROPERTIES(${TARGET_NAME} PROPERTIES
-        LABELS "TEST-CONFIG"
-        OUTPUT_NAME ${TARGET_NAME}
+    LABELS "TEST-CONFIG"
+    OUTPUT_NAME ${TARGET_NAME}
     )
 ```
 
 > **CAUTION**: make sure that you have CMakeLists files that include your
-> subdirectories target (cf: previous chapter `Write the tests`).
+> subdirectories target (cf: previous chapter ["Write the tests"](./1_Write_the_tests.html)).
 
-## Build the test widget
+## Build the test binding
 
-By default, the test widget is not built, you have to specify that you want to
-build it or use a special target.
-
-### Building at the same time than classic widget
-
-Specify the option `BUILD_TEST_WGT=TRUE` when you configure your build.
-
-ie:
+By default, the test binding is built.
+Therefore, simply build the binding as usual.
 
 ```bash
+# Go in your project directory
+cd <your_binding>/
+# Make a build directory if it does not already exist
+mkdir -p build
+# Go in your build directory
 cd build
-cmake -DBUILD_TEST_WGT=TRUE ..
-make
-make widget
-```
-
-### Building separately only the test widget
-
-Just use the target `test_widget` after a classic build.
-
-ie:
-
-```bash
-cd build
+# Run the cmake part
 cmake ..
+# Run the make part
 make
-make test_widget
 ```
+
+After running the command lines given here above, in the `build/` directory, you can see now, the directories named `package/` and `package-test/`.

@@ -22,9 +22,9 @@
 function usage() {
 	cat >&2 << EOF
 
-Usage: $0 <binding-wgt-rootdir> <test-wgt-rootdir> [-a|--allinone] [-p|--clean-previous] [-t|--timeout <X>] [-l|--lavaoutput] [-c|--coverage] [-o|--coverage-dir <X>] [-e|--exclude <X>] [-i|--include <X>] [-h|--help] [-d|--debug]
-binding-wgt-rootdir: path to the test wgt file
-test-wgt-rootdir: path to the test folder file
+Usage: $0 <binding-rootdir> <test-rootdir> [-a|--allinone] [-p|--clean-previous] [-t|--timeout <X>] [-l|--lavaoutput] [-c|--coverage] [-o|--coverage-dir <X>] [-e|--exclude <X>] [-i|--include <X>] [-h|--help] [-d|--debug]
+binding-rootdir: path to the binding folder
+test-rootdir: path to the test binding folder file
 -a|--allinone: All In One (1 binder for the test) for some specific debug, use carefully.
 -p|--clean-previous: Clean previous test and coverage results and exit.
 -t|--timeout: timeout in second. (Default 300 seconds)

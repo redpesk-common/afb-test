@@ -1,13 +1,5 @@
 # Test example
 
-To launch the binding use the command-line provided at the end of the build,
-and the afb-daemon-demo just like in the example below. This will launch the
-test of an Helloworld binding example. Tests's codes are available in the LUA
-files `conf.d/controller/lua.d/helloworld.lua` and
-`conf.d/controller/lua.d/aftTest.lua`.
-
-The example will run some basics tests on API verb calls and events received.
-
 ## helloworld.lua
 
 ```lua
@@ -106,5 +98,4 @@ _AFT.describe("testAssertVerbResponseEqualsError",function() _AFT.assertVerbResp
 _AFT.describe("testAssertVerbCbError",function() _AFT.assertVerbCbError('hello', 'pingfail', {},_callbackError) end)
 ```
 
-> **NOTE**: I suggest you to take this lua file example to make your own test
-> then read the following chapter if needed to write more complex tests.
+> **Suggestion**: take these lua files as example to make your own test, then read the following chapter if needed to write more complex tests.
