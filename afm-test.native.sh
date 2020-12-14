@@ -38,8 +38,8 @@ test-wgt-rootdir: path to the test folder file
 EOF
 }
 
-BINDER="$(command -v afb-daemon)"
-AFBTEST="$(pkg-config --variable libdir afb-test)/aft.so"
+BINDER="$(command -v afb-binder)"
+AFBTEST="/var/local/lib/afm/applications/afb-test/lib/aft.so"
 PORT=1234
 PORTSERVICE=$((PORT+1))
 TOKEN=
@@ -229,7 +229,6 @@ run_all_in_one_test() {
 			--port="${PORT}" \
 			--roothttp=. \
 			--tracereq=common \
-			--token="${TOKEN}" \
 			--workdir="${TESTPACKAGEDIR}" \
 			--ldpaths="${SERVICEPACKAGEDIR}" \
 			--binding="${AFBTEST}" \
@@ -281,7 +280,6 @@ EOF
 			--port="${PORT}" \
 			--no-httpd \
 			--tracereq=common \
-			--token="${TOKEN}" \
 			--workdir="${TESTPACKAGEDIR}" \
 			--binding="${AFBTEST}" \
 			"${SOCKETCLIENT[@]}" \
