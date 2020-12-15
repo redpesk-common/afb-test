@@ -16,21 +16,13 @@ dnf install afb-test
 
 ## Native installation
 
-Firstly, ["Verify Your Build Host"](../developer-guides/host-configuration/docs/1-Setup-your-build-host.html). Indeed, your host needs to have a supported distribution.
-Then, you can use the following command-line to get the `afb-test` binding and all its dependencies. Please use the right paragraph, according to you distribution.
+Firstly, see ["Setup your build host"](../developer-guides/host-configuration/docs/1-Setup-your-build-host.html) in order to add the repository for your distribution.
+
+In order to do that, go to the paragraph corresponding to your distribution, and follow the instructions given in the **"Add the repositories"** sub-paragraph.
 
 ### Ubuntu 20.04 and 18.04
 
-Firstly, add the Redpesk "sdk" repository in the list of your packages repositories.
-
-```bash
-# Add the repository in your list
-$ echo "deb https://download.redpesk.bzh/redpesk-devel/releases/33/sdk/$DISTRO/ ./" | sudo tee -a /etc/apt/sources.list
-# Add the repository key
-$ curl -L https://download.redpesk.bzh/redpesk-devel/releases/33/sdk/$DISTRO/Release.key | sudo apt-key add -
-```
-
-Then, update the list of packages and simply install the `afb-test` package.
+Update the list of packages and simply install the `afb-test` package.
 
 ```bash
 # Update the list of available packages
@@ -41,41 +33,22 @@ $ sudo apt-get install afb-test
 
 ### Fedora 31, 32 and 33
 
-Firstly, add the Redpesk "sdk" repository in the list of your packages repositories.
+Update the list of packages and simply install the `afb-test` package.
 
 ```bash
-$ cat << EOF > /etc/yum.repos.d/redpesk-sdk.repo
-[redpesk-sdk]
-name=redpesk-sdk
-baseurl=https://download.redpesk.bzh/redpesk-devel/releases/33/sdk/$DISTRO
-enabled=1
-repo_gpgcheck=0
-type=rpm
-gpgcheck=0
-skip_if_unavailable=True
-EOF
-```
-
-Then, simply install the `afb-test` package.
-
-```bash
-dnf install afb-test
+# Update the list of available packages
+$ dnf update
+# Installation of afb-test
+$ dnf install afb-test
 ```
 
 ### OpenSUSE Leap 15.1 and 15.2
 
-Firstly, add the Redpesk "sdk" repository in the list of your packages repositories.
+Update the list of packages and simply install the `afb-test` package.
 
 ```bash
-$ OPENSUSE_VERSION=15.2 # Set the right OpenSUSE version
-# Add the repository in your list
-$ sudo zypper ar https://download.redpesk.bzh/redpesk-devel/releases/33/sdk/$DISTRO/ redpesk-sdk
 # Refresh your repositories
 $ sudo zypper ref
-```
-
-Then, simply install the `afb-test` package.
-
-```bash
-sudo zypper in afb-test
+# Install the package
+$ sudo zypper in afb-test
 ```
