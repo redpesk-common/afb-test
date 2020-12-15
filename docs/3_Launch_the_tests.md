@@ -267,87 +267,52 @@ To see which test passed or not, see test files.
 
 ## Launch test on a target board
 
-// TODO !!!!
+### Using Redtests
 
-If you are trying to launch your test on a target you'll have to use
-a test widget which contains test files, fixture and configuration.
-Then use **afm-test**:
+If you want to launch your tests on target, the easier option is to pass through [Redtests](../getting_started/docs/quickstart/1_introduction.html).
+Indeed, in this case, the only things you need to do is to run the run-redtest script, provided by the redtest package.
 
-```bash
-# afm-test -h
-Usage: /usr/bin/afm-test [-l|--lava] [-v|--verb <verb>] <path>
--l|--lavaoutput: flag that enable Lava test marker to the output. (Default: disabled)
--v|--verb: select a specific verb to launch from the test API. (Default: all)
-path: path to the test wgt file
-```
-
-By default, the test widgets should be located in /usr/AGL/apps/testwgt. This
-will install the widget, launch the tests then display the result on standard
-output. After that it will kill test binding and remove it.
-
-### Example on a target
-
-Here is an example:
+For the `helloworld-binding` package, the steps to follow are listed here below.
 
 ```bash
-qemux86-64:~# afm-test /usr/AGL/apps/testwgt/aftest-test.wgt
-afm-test /tmp/aftest-test.wgt
-PASS: aftest-test@6.90 started with pid=1649
-1..59
-~~~~~ Begin Test ~~~~~
-~~~~~ Begin Test Assert Equals ~~~~~
-~~~~~ End Test Assert Equals ~~~~~
-~~~~~ End Test ~~~~~
-PASS: 1 testAssertEquals.testFunction
-~~~~~ Begin Test ~~~~~
-~~~~~ End Test ~~~~~
-PASS: 2 testAssertNotEquals.testFunction
-~~~~~ Begin Test ~~~~~
-~~~~~ End Test ~~~~~
-PASS: 3 testAssertItemsEquals.testFunction
-~~~~~ Begin Test ~~~~~
-~~~~~ End Test ~~~~~
-[...]
-PASS: 58 testAssertVerbResponseEqualsError.testFunction
-~~~~~ Begin Test ~~~~~
-~~~~~ End Test ~~~~~
-PASS: 59 testAssertVerbCbError.testFunction
-# Ran 59 tests in 0.003 seconds, 59 successes, 0 failures
-~~~~~~~~~~ END ALL TESTS ~~~~~~~~~~
-1..63
-~~~~~ Begin Test ~~~~~
-~~~~~ Begin Test Assert Equals ~~~~~
-~~~~~ End Test Assert Equals ~~~~~
-~~~~~ End Test ~~~~~
-PASS: 1 testAssertEquals.testFunction
-~~~~~ Begin Test ~~~~~
-~~~~~ End Test ~~~~~
-PASS: 2 testAssertNotEquals.testFunction
-~~~~~ Begin Test ~~~~~
-~~~~~ End Test ~~~~~
-PASS: 3 testAssertItemsEquals.testFunction
-~~~~~ Begin Test ~~~~~
-~~~~~ End Test ~~~~~
-[...]
-~~~~~ Begin Test ~~~~~
-~~~~~ End Test ~~~~~
-PASS: 61 TestGetVerb.testFunction
-~~~~~ Begin Test ~~~~~
-~~~~~ End Test ~~~~~
-PASS: 62 Test_turning_on.testFunction
-~~~~~ Begin Test ~~~~~
-~~~~~ End Test ~~~~~
-PASS: 63 testLockWait.testFunction
-# Ran 63 tests in 0.003 seconds, 63 successes, 0 failures
-~~~~~~~~~~ END ALL TESTS ~~~~~~~~~~
-PASS: aftest-test@6.90 killed and removed
+# Installation of the helloworld-binding
+$ dnf install helloworld-binding
+# Installation of the redtest corresponding package
+$ dnf install helloworld-binding-redtest
+# Run the tests (through redtests)
+$ /usr/lib/gps-binding-redtest/redtest/run-redtest
+# TODO: add stdout
 ```
 
-The command being : ```afm-test /usr/AGL/apps/testwgt/aftest-test.wgt```
+### Manually
 
-You can see here that everything ran as on your pc terminal.
-**Begin Test**  and **End Test** are the
-beforeEach and afterEach functions and
-**END ALL TESTS**  is the after all functions.
+If you do not want to use redtests, you can also build the test package and then run your tests manually on the target.
+Once you have built your test package, and that you have added your repository to the target, you can install your package as well as its "test" sub-package.
 
- **PASS :** shows the function that is or was running.
+From that, you can follow the steps here below to run manually the tests on the target. The example taken here is still helloworld-binding.
+
+```bash
+# Installation of the main binding
+$ dnf install helloworld-binding
+
+# Installation of the test binding
+$ dnf install helloworld-binding-test
+
+# List the available bindings on target
+$ afm-util list
+# TODO: add output
+
+# Check that our main binding is running
+$ afm-util ps
+# TODO: add output
+
+# If the binding is not in the list before, start it here
+#$ afm-util start $APP
+
+# Start the tests here
+$ afm-test helloworld-binding-test
+# TODO: add output
+
+# End the main binding
+$ afm-util terminate $APP
+```
