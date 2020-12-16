@@ -256,7 +256,7 @@ From now, you can now start the tests with the `afm-test` script of `afb-test` p
 $ afm-test package package-test/
 ---------------- Test result ------------------
 Test result from: /root/helloworld-binding/build/package-test/helloworld.tap
-# Ran 6 tests in 0.005 seconds, 6 successes, 0 failures, 0 errors
+# Ran 6 tests in 0.005 seconds, 5 successes, 0 failures, 0 errors
 
 Test result from: /root/helloworld-binding/build/package-test/mapi_tests.tap
 # Ran 4 tests in 0.004 seconds, 4 successes, 0 failures, 0 error, 1 skipped
@@ -280,13 +280,29 @@ $ dnf install helloworld-binding
 # Installation of the redtest corresponding package
 $ dnf install helloworld-binding-redtest
 # Run the tests (through redtests)
-$ /usr/lib/gps-binding-redtest/redtest/run-redtest
-# TODO: add stdout
+$ /usr/lib/helloworld-binding-redtest/redtest/run-redtest
+find: ‘/home/0/app-data/helloworld-binding-test’: No such file or directory
+PASS: helloworld-binding-test started with pid=9425
+~~~~~ Begin testPingSuccess ~~~~~
+~~~~~ End testPingSuccess ~~~~~
+PASS: 1 testPingSuccess.testFunction
+PASS: 2 testPingSuccessAndResponse.testFunction
+PASS: 3 testPingSuccessCallback.testFunction
+PASS: 4 testPingError.testFunction
+PASS: 5 testPingErrorAndResponse.testFunction
+# Ran 5 tests in 0.001 seconds, 5 successes, 0 error
+PASS: 1 TestListSuccess.testFunction
+PASS: 2 TestSubscribeSuccess.testFunction
+PASS: 3 TestUnsubscribeSuccess.testFunction
+PASS: 4 TestWrongVerbError.testFunction
+PASS: 5 # SKIP Test (mapi-helloworld, skipped_verb, { } , nil) is skipped
+# Ran 4 tests in 0.001 seconds, 4 successes, 0 failures, 1 skipped
+PASS: helloworld-binding-test killed
 ```
 
 ### Manually
 
-If you do not want to use redtests, you can also build the test package and then run your tests manually on the target.
+If you do not want to use Redtests, you can also build the test package and then run your tests manually on the target.
 Once you have built your test package, and that you have added your repository to the target, you can install your package as well as its "test" sub-package.
 
 From that, you can follow the steps here below to run manually the tests on the target. The example taken here is still helloworld-binding.
@@ -300,19 +316,76 @@ $ dnf install helloworld-binding-test
 
 # List the available bindings on target
 $ afm-util list
-# TODO: add output
+[
+  {
+    "description":"Provide an Helloworld Binding",
+    "name":"helloworld-binding",
+    "shortname":"",
+    "id":"helloworld-binding",
+    "version":"0.0",
+    "author":"Iot-Team <frederic.marec@iot.bzh>",
+    "author-email":"",
+    "width":"",
+    "height":"",
+    "icon":"/var/local/lib/afm/applications/helloworld-binding/icon.png",
+    "http-port":30002
+  },
+  {
+    "description":"Test widget used to launch tests for the project helloworld-binding",
+    "name":"helloworld-binding-test",
+    "shortname":"",
+    "id":"helloworld-binding-test",
+    "version":"0.0",
+    "author":"Romain Forlot <romain.forlot@iot.bzh>",
+    "author-email":"",
+    "width":"",
+    "height":"",
+    "icon":"/var/local/lib/afm/applications/helloworld-binding-test/icon.png",
+    "http-port":30003
+  }
+]
 
 # Check that our main binding is running
 $ afm-util ps
-# TODO: add output
+[
+]
 
 # If the binding is not in the list before, start it here
-#$ afm-util start $APP
+$ afm-util start helloworld-binding
+9312
+$ afm-util ps
+[
+  {
+    "runid":9312,
+    "pids":[
+      9312
+    ],
+    "state":"running",
+    "id":"helloworld-binding"
+  }
+]
 
 # Start the tests here
 $ afm-test helloworld-binding-test
-# TODO: add output
+find: ‘/home/0/app-data/helloworld-binding-test’: No such file or directory
+PASS: helloworld-binding-test started with pid=9356
+~~~~~ Begin testPingSuccess ~~~~~
+~~~~~ End testPingSuccess ~~~~~
+PASS: 1 testPingSuccess.testFunction
+PASS: 2 testPingSuccessAndResponse.testFunction
+PASS: 3 testPingSuccessCallback.testFunction
+PASS: 4 testPingError.testFunction
+PASS: 5 testPingErrorAndResponse.testFunction
+# Ran 6 tests in 0.001 seconds, 5 successes, 0 error
+PASS: 1 TestListSuccess.testFunction
+PASS: 2 TestSubscribeSuccess.testFunction
+PASS: 3 TestUnsubscribeSuccess.testFunction
+PASS: 4 TestWrongVerbError.testFunction
+PASS: 5 # SKIP Test (mapi-helloworld, skipped_verb, { } , nil) is skipped
+# Ran 4 tests in 0.001 seconds, 4 successes, 0 failures, 1 skipped
+PASS: helloworld-binding-test killed
 
 # End the main binding
-$ afm-util terminate $APP
+$ afm-util terminate helloworld-binding
+true
 ```
