@@ -169,7 +169,7 @@ Scanning dependencies of target project_populate_helloworld-config
 Scanning dependencies of target populate
 [ 96%] Built target populate
 Scanning dependencies of target helloworld-binding_build_done
-++ Debug from afb-daemon --port=1234  --ldpaths=package --workdir=. --roothttp=../htdocs --token= --verbose 
+++ Debug from afb-binder --port=1234  --ldpaths=package --workdir=. --roothttp=../htdocs --token= --verbose 
 [ 96%] Built target helloworld-binding_build_done
 Scanning dependencies of target autobuild
 [100%] Built target autobuild
