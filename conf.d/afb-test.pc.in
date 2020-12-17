@@ -26,4 +26,4 @@ Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
 URL: @PROJECT_URL@
 
-Requires: afb-binder
+Requires: afb-binding
