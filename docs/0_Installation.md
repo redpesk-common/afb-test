@@ -16,7 +16,7 @@ dnf install afb-test
 
 ## Native installation
 
-Firstly, see ["Setup your build host"](../developer-guides/host-configuration/docs/1-Setup-your-build-host.html) in order to add the repository for your distribution.
+Firstly, see ["Setup your build host"]({% chapter_link host-configuration-doc.setup-your-build-host %}) in order to add the repository for your distribution.
 
 In order to do that, go to the paragraph corresponding to your distribution, and follow the instructions given in the **"Add the repositories"** sub-paragraph.
 

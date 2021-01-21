@@ -269,7 +269,7 @@ To see which test passed or not, see test files.
 
 ### Using Redtests
 
-If you want to launch your tests on target, the easier option is to pass through [Redtests](../getting_started/docs/quickstart/1_introduction.html).
+If you want to launch your tests on target, the easier option is to pass through [Redtests]({% chapter_link redtests-quickstart-doc.introduction %}).
 Indeed, in this case, the only things you need to do is to run the run-redtest script, provided by the redtest package.
 
 For the `helloworld-binding` package, the steps to follow are listed here below.

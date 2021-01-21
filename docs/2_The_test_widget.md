@@ -5,7 +5,7 @@
 Now that the test tree has been created, in each directory you have to create
 a `CMakeLists.txt` file to hold the CMake's target definition. For each target
 you need to specify a **LABELS** depending on the purpose of the files for each
-directory. There are more explanations about using the *afb-cmake-modules* in the ["AFB CMake Modules"](../developer-guides/cmakeafbtemplates/dev_guide/cmake-overview.html) chapter.
+directory. There are more explanations about using the *afb-cmake-modules* in the ["AFB CMake Modules"]({% chapter_link cmake-apps-module.overview %}) chapter.
 
 Here is a cheat sheet to map the **LABELS** target for each classic test tree
 directory:
