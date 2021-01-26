@@ -1,14 +1,14 @@
 # Installation
 
-`afb-test`package is available either to run tests natively (i.e. on your desktop PC) or on target (with a Redpesk® image).
+`afb-test`package is available either to run tests natively (i.e. on your desktop PC) or on target (with a redpesk image).
 
 The two paragraphs here below give you the right instructions, depending of what you want.
 
 ## Installation on target
 
-### Redpesk® 33
+### redpesk 33
 
-The default repositories available in Redpesk® 33 contains already the `afb-test` package. Therefore, you only have to run a simple `dnf install` command.
+The default repositories available in redpesk 33 contains already the `afb-test` package. Therefore, you only have to run a simple `dnf install` command.
 
 ```bash
 dnf install afb-test
