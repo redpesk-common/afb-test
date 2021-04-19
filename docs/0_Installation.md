@@ -28,7 +28,7 @@ Update the list of packages and simply install the `afb-test` package.
 # Update the list of available packages
 $ sudo apt update
 # Installation of afb-test
-$ sudo apt-get install afb-test
+$ sudo apt-get install afb-test-bin
 ```
 
 ### Fedora 31, 32 and 33
