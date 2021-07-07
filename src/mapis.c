@@ -52,14 +52,11 @@ static int LoadOneMapi(void *data, afb_api_t apiHandle) {
 				break;
 		}
 
-		if( AddActionsToSection(apiHandle, &ctrlConfig->sections[idx], mapisHandle->eventsJ, 0) ) {
+		if( EventConfig(apiHandle, &ctrlConfig->sections[idx], mapisHandle->eventsJ) ) {
 			AFB_API_ERROR(apiHandle, "Wasn't able to add new events to %s", ctrlConfig->sections[idx].uid);
 			return -1;
 		}
 	}
-
-	// declare an event event manager for this API;
-	afb_api_on_event(apiHandle, CtrlDispatchApiEvent);
 
 	return 0;
 }
