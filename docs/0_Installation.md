@@ -6,12 +6,13 @@ The two paragraphs here below give you the right instructions, depending of what
 
 ## Installation on target
 
-### redpesk 33
+### redpesk
 
-The default repositories available in redpesk 33 contains already the `afb-test` package. Therefore, you only have to run a simple `dnf install` command.
+The default repositories available in redpesk already contain the `afb-test` package. Therefore, you only have to run a simple `dnf install` command.
 
 ```bash
-dnf install afb-test
+# Sudo is needed for non-privileged users
+sudo dnf install afb-test
 ```
 
 ## Native installation
@@ -20,7 +21,7 @@ Firstly, see ["Setup your build host"]({% chapter_link host-configuration-doc.se
 
 In order to do that, go to the paragraph corresponding to your distribution, and follow the instructions given in the **"Add the repositories"** sub-paragraph.
 
-### Ubuntu 20.04 and 18.04
+### Ubuntu
 
 Update the list of packages and simply install the `afb-test` package.
 
@@ -31,18 +32,18 @@ $ sudo apt update
 $ sudo apt-get install afb-test-bin
 ```
 
-### Fedora 31, 32 and 33
+### Fedora
 
 Update the list of packages and simply install the `afb-test` package.
 
 ```bash
 # Update the list of available packages
-$ dnf update
+$ sudo dnf update
 # Installation of afb-test
-$ dnf install afb-test
+$ sudo dnf install afb-test
 ```
 
-### OpenSUSE Leap 15.1 and 15.2
+### OpenSUSE
 
 Update the list of packages and simply install the `afb-test` package.
 

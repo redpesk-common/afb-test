@@ -276,9 +276,9 @@ For the `helloworld-binding` package, the steps to follow are listed here below.
 
 ```bash
 # Installation of the helloworld-binding
-$ dnf install helloworld-binding
+$ sudo dnf install helloworld-binding
 # Installation of the redtest corresponding package
-$ dnf install helloworld-binding-redtest
+$ sudo dnf install helloworld-binding-redtest
 # Run the tests (through redtests)
 $ /usr/lib/helloworld-binding-redtest/redtest/run-redtest
 find: ‘/home/0/app-data/helloworld-binding-test’: No such file or directory
@@ -309,10 +309,10 @@ From that, you can follow the steps here below to run manually the tests on the 
 
 ```bash
 # Installation of the main binding
-$ dnf install helloworld-binding
+$ sudo dnf install helloworld-binding
 
 # Installation of the test binding
-$ dnf install helloworld-binding-test
+$ sudo dnf install helloworld-binding-test
 
 # List the available bindings on target
 $ afm-util list
