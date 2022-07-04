@@ -269,7 +269,7 @@ EOF
 
 	#Wait the sd_notify notification
 	tail --pid="${PID_WTN}" -f /dev/null
-	B_PID=$(pidof "${PROCNAME}")
+	B_PID=$(pgrep "${PROCNAME}")
 	rm -f "${NOTIFY_SOCKET}"
 	rm -f /tmp/waiting_notify.py
 
@@ -288,7 +288,7 @@ EOF
 			-vvv \
 			&> "${LOGFILETEST}"
 
-	kill -2 "${B_PID}"
+	for p in ${B_PID}; do kill -9 "${p}";done
 	tail --pid="${B_PID}" -f /dev/null
 }
 
