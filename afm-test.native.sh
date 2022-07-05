@@ -68,8 +68,6 @@ CLEAN_PRV="FALSE"
 HAVE_PRV_COV=FALSE
 LOGFILESERVICE="test-service.log"
 LOGFILETEST="test.log"
-NOTIFY_SOCKET="${TMPDIR}/socket_notify.socket"
-export NOTIFY_SOCKET
 
 clean_previous_test() {
 	echo "Cleaning previous test reports ..."
@@ -243,37 +241,38 @@ run_all_in_one_test() {
 run_test() {
 	pkill "${TESTPROCNAME}"
 	pkill "$PROCNAME"
-	#Create a server socket waiting for notification
-	cat << EOF > ${TMPDIR}/waiting_notify.py
-#!/usr/bin/python3
-import socket
-with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as server:
-	server.bind("${NOTIFY_SOCKET}")
-	server.settimeout(${TIMEOUT})
-	server.recv(1024)
-EOF
-	chmod a+x ${TMPDIR}/waiting_notify.py
-	rm -f "${NOTIFY_SOCKET}"
-	${TMPDIR}/waiting_notify.py&
-	PID_WTN="$!"
 	#Waiting socket creation.
-	while [ ! -S "${NOTIFY_SOCKET}" ]; do sleep 0.1; done
 
-	timeout -s "${KILLSIGNUM}" "${TIMEOUT}" \
-		"${BINDER}"\
-			--name="${PROCNAME}" \
-			--port=${PORTSERVICE} \
-			--workdir="${SERVICEPACKAGEDIR}" \
-			--ldpaths=. \
-			"${SOCKETSERVER[@]}" \
-			-vvv \
-			&> "${LOGFILESERVICE}" &
+	"${BINDER}"\
+		--name="${PROCNAME}" \
+		--port=${PORTSERVICE} \
+		--workdir="${SERVICEPACKAGEDIR}" \
+		--ldpaths=. \
+		"${SOCKETSERVER[@]}" \
+		-vvv \
+		&> "${LOGFILESERVICE}" &
+	B_PID=$!
 
-	#Wait the sd_notify notification
-	tail --pid="${PID_WTN}" -f /dev/null
-	B_PID=$(pgrep "${PROCNAME}")
-	rm -f "${NOTIFY_SOCKET}"
-	rm -f ${TMPDIR}/waiting_notify.py
+	# Wait readyness of APIs
+	local socks=(${APIs[@]/#/${TMPDIR}/})
+	local decnt=((100 * TIMEOUT))
+	local inprogress=true
+	while $inprogress; do
+		# check binder still alive
+		kill -s 0 ${B_PID} 2>/dev/null || return 1
+		# check sockets
+		inprogress=false
+		local s
+		for s in ${socks[@]}; do
+			if [[ ! -S $s ]]; then
+				# check timeout
+				((--decnt > 0)) || return 2
+				sleep 0.01
+				inprogress=true
+				break
+			fi
+		done
+	done
 
 	#Do not start the Binder before to be absolutly sure the server is up.
 	timeout -s "${KILLSIGNUM}" "${TIMEOUT}" \
@@ -290,8 +289,8 @@ EOF
 			-vvv \
 			&> "${LOGFILETEST}"
 
-	for p in ${B_PID}; do kill -s "${KILLSIGNUM}" "${p}";done
-	tail --pid="${B_PID}" -f /dev/null
+	kill -s "${KILLSIGNUM}"  ${B_PID}
+	tail --pid=${B_PID} -f /dev/null
 }
 
 gen_test_parameter() {
