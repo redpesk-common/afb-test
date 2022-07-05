@@ -47,6 +47,7 @@ MODE="SERVICE"
 TIMEOUT=300
 DBG_MODE="FALSE"
 CUR_DIR=$(pwd)
+KILLSIGNUM=9
 
 INCLUDE_TEST=()
 EXCLUDE_TEST=()
@@ -224,7 +225,7 @@ gen_test_var(){
 }
 
 run_all_in_one_test() {
-	timeout -s 9 "${TIMEOUT}" \
+	timeout -s "${KILLSIGNUM}" "${TIMEOUT}" \
 		"${BINDER}" --name="${TESTPROCNAME}" \
 			--port="${PORT}" \
 			--roothttp=. \
@@ -257,7 +258,7 @@ EOF
 	#Waiting socket creation.
 	while [ ! -S "${NOTIFY_SOCKET}" ]; do sleep 0.1; done
 
-	timeout -s 9 "${TIMEOUT}" \
+	timeout -s "${KILLSIGNUM}" "${TIMEOUT}" \
 		"${BINDER}"\
 			--name="${PROCNAME}" \
 			--port=${PORTSERVICE} \
@@ -274,7 +275,7 @@ EOF
 	rm -f /tmp/waiting_notify.py
 
 	#Do not start the Binder before to be absolutly sure the server is up.
-	timeout -s 9 "${TIMEOUT}" \
+	timeout -s "${KILLSIGNUM}" "${TIMEOUT}" \
 		"${BINDER}" \
 			--name="${TESTPROCNAME}" \
 			--port="${PORT}" \
@@ -288,7 +289,7 @@ EOF
 			-vvv \
 			&> "${LOGFILETEST}"
 
-	for p in ${B_PID}; do kill -9 "${p}";done
+	for p in ${B_PID}; do kill -s "${KILLSIGNUM}" "${p}";done
 	tail --pid="${B_PID}" -f /dev/null
 }
 
