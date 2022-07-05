@@ -255,7 +255,7 @@ run_test() {
 
 	# Wait readyness of APIs
 	local socks=(${APIs[@]/#/${TMPDIR}/})
-	local decnt=((100 * TIMEOUT))
+	local decnt=$((100 * TIMEOUT))
 	local inprogress=true
 	while $inprogress; do
 		# check binder still alive
