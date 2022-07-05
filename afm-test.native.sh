@@ -60,13 +60,15 @@ APIs=()
 SOCKETCLIENT=();
 SOCKETSERVER=();
 
+TMPDIR=$(mktemp -d)
+
 COVERAGE="FALSE"
 COVERAGE_PATH=$(readlink -f "coverage")
 CLEAN_PRV="FALSE"
 HAVE_PRV_COV=FALSE
 LOGFILESERVICE="test-service.log"
 LOGFILETEST="test.log"
-NOTIFY_SOCKET="/tmp/socket_notify.socket"
+NOTIFY_SOCKET="${TMPDIR}/socket_notify.socket"
 export NOTIFY_SOCKET
 
 clean_previous_test() {
@@ -186,12 +188,7 @@ trap "cleanNexit 1" SIGHUP SIGINT SIGABRT SIGTERM
 cleanNexit() {
 	cd "${CUR_DIR}" || exit 1
 	#Remove all tmp files
-	for A in ${APIs[@]};do
-		rm -f /tmp/"${A}" 2> /dev/null
-	done
-
-	rm -f "${NOTIFY_SOCKET}"
-	rm -f /tmp/waiting_notify.py
+	rm -rf ${TMPDIR}
 
 	trap '' EXIT SIGHUP SIGINT SIGABRT SIGTERM
 	printResult "$1"
@@ -247,7 +244,7 @@ run_test() {
 	pkill "${TESTPROCNAME}"
 	pkill "$PROCNAME"
 	#Create a server socket waiting for notification
-	cat << EOF > /tmp/waiting_notify.py
+	cat << EOF > ${TMPDIR}/waiting_notify.py
 #!/usr/bin/python3
 import socket
 with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as server:
@@ -255,9 +252,9 @@ with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as server:
 	server.settimeout(${TIMEOUT})
 	server.recv(1024)
 EOF
-	chmod a+x /tmp/waiting_notify.py
+	chmod a+x ${TMPDIR}/waiting_notify.py
 	rm -f "${NOTIFY_SOCKET}"
-	/tmp/waiting_notify.py&
+	${TMPDIR}/waiting_notify.py&
 	PID_WTN="$!"
 	#Waiting socket creation.
 	while [ ! -S "${NOTIFY_SOCKET}" ]; do sleep 0.1; done
@@ -276,7 +273,7 @@ EOF
 	tail --pid="${PID_WTN}" -f /dev/null
 	B_PID=$(pgrep "${PROCNAME}")
 	rm -f "${NOTIFY_SOCKET}"
-	rm -f /tmp/waiting_notify.py
+	rm -f ${TMPDIR}/waiting_notify.py
 
 	#Do not start the Binder before to be absolutly sure the server is up.
 	timeout -s "${KILLSIGNUM}" "${TIMEOUT}" \
@@ -306,8 +303,8 @@ gen_test_parameter() {
 		cleanNexit 2
 	fi
 
-	SOCKETCLIENT=(${APIs[@]/#/--ws-client=unix:/tmp/})
-	SOCKETSERVER=(${APIs[@]/#/--ws-server=unix:/tmp/})
+	SOCKETCLIENT=(${APIs[@]/#/--ws-client=unix:${TMPDIR}/})
+	SOCKETSERVER=(${APIs[@]/#/--ws-server=unix:${TMPDIR}/})
 
 	testVerb=()
 
