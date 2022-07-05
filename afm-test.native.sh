@@ -56,6 +56,10 @@ export INCLUDE_TEST
 export EXCLUDE_TEST
 export CUR_TEST
 
+APIs=()
+SOCKETCLIENT=();
+SOCKETSERVER=();
+
 COVERAGE="FALSE"
 COVERAGE_PATH=$(readlink -f "coverage")
 CLEAN_PRV="FALSE"
@@ -182,7 +186,7 @@ trap "cleanNexit 1" SIGHUP SIGINT SIGABRT SIGTERM
 cleanNexit() {
 	cd "${CUR_DIR}" || exit 1
 	#Remove all tmp files
-	for A in ${APIs};do
+	for A in ${APIs[@]};do
 		rm -f /tmp/"${A}" 2> /dev/null
 	done
 
@@ -294,21 +298,16 @@ EOF
 }
 
 gen_test_parameter() {
-	APIs=$(sed '/feature.*provided-api/,/feature/!d' "${SERVICEPACKAGEDIR}/config.xml" | grep -v feature| sed -r -e 's:.*"(.*)" v.*:\1:')
-	API=$(echo "${APIs}" | cut -d" " -f1)
+	APIs=($(sed '/feature.*provided-api/,/feature/!d' "${SERVICEPACKAGEDIR}/config.xml" | grep -v feature| sed -r -e 's:.*"(.*)" v.*:\1:'))
+	API=${APIs[0]}
 
 	if [ -z "$API" ] && [ "$MODE" = "SERVICE" ]; then
 		echo "Error: can't find config.xml file for this project. Please call 'make widget'"
 		cleanNexit 2
 	fi
 
-	SOCKETCLIENT=();
-	SOCKETSERVER=();
-
-	for A in ${APIs};do
-		SOCKETCLIENT+=("--ws-client=unix:/tmp/${A}");
-		SOCKETSERVER+=("--ws-server=unix:/tmp/${A}");
-	done
+	SOCKETCLIENT=(${APIs[@]/#/--ws-client=unix:/tmp/})
+	SOCKETSERVER=(${APIs[@]/#/--ws-server=unix:/tmp/})
 
 	testVerb=()
 
@@ -373,8 +372,6 @@ gen_test_parameter() {
 	fi
 
 	export TEST_VERB_CALLS
-	export SOCKETCLIENT
-	export SOCKETSERVER
 }
 
 do_test() {
