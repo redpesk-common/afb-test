@@ -320,7 +320,7 @@ gen_test_parameter() {
 	TEST_VERB_CALLS=()
 
 	if [ "${LAVAOUTPUT}" ];then
-			LAVA_OPT="\"lavaOutput\":true"
+			LAVA_OPT="\\\"lavaOutput\\\":true"
 	fi
 
 	NB_INC=${#INCLUDE_TEST[@]}
