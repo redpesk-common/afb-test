@@ -487,6 +487,11 @@ do
 			shift # past argument
 			shift # past value
 			;;
+		-g|--logfile)
+			LOGFILETEST="$2"
+			shift # past argument
+			shift # past value
+			;;
 		*)
 			if [ -z "${SERVICEPACKAGEDIR}" ]; then
 				SERVICEPACKAGEDIR="$(readlink -f "$1")"
