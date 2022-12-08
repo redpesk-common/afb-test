@@ -58,33 +58,33 @@ CMake Warning (dev) in CMakeLists.txt:
   line.
 This warning is for project developers.  Use -Wno-dev to suppress it.
 
--- The C compiler identification is GNU 10.2.1
--- The CXX compiler identification is GNU 10.2.1
--- Check for working C compiler: /usr/bin/cc
--- Check for working C compiler: /usr/bin/cc - works
+-- The C compiler identification is GNU 11.3.0
+-- The CXX compiler identification is GNU 11.3.0
 -- Detecting C compiler ABI info
 -- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
 -- Detecting C compile features
 -- Detecting C compile features - done
--- Check for working CXX compiler: /usr/bin/c++
--- Check for working CXX compiler: /usr/bin/c++ - works
 -- Detecting CXX compiler ABI info
 -- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
 -- Detecting CXX compile features
 -- Detecting CXX compile features - done
-Distribution detected (separated by ';' choose one of them) fedora
-Include: /usr/share/cmake/Modules/CMakeAfbTemplates/cmake/cmake.d/01-build_options.cmake
--- Found PkgConfig: /usr/bin/pkg-config (found version "1.6.3") 
+Distribution detected (separated by ';' choose one of them) debian
+Include: /usr/share/cmake-3.22/Modules/CMakeAfbTemplates/cmake/cmake.d/01-build_options.cmake
+-- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.2") 
 -- Checking for module 'json-c'
---   Found json-c, version 0.13.1
+--   Found json-c, version 0.15
 -- Checking for module 'afb-binding'
---   Found afb-binding, version 4.0.0alpha
+--   Found afb-binding, version 4.1.0
 -- Checking for module 'afb-libhelpers'
---   Found afb-libhelpers, version 6.99
-Include: /usr/share/cmake/Modules/CMakeAfbTemplates/cmake/cmake.d/02-variables.cmake
--- Check gcc_minimal_version (found gcc version 10.2.1) 	(found g++ version 10.2.1)
-Include: /usr/share/cmake/Modules/CMakeAfbTemplates/cmake/cmake.d/03-macros.cmake
-Include: /usr/share/cmake/Modules/CMakeAfbTemplates/cmake/cmake.d/04-extra_targets.cmake
+--   Found afb-libhelpers, version 10.0.0
+-- Checking for module 'libsystemd'
+--   Found libsystemd, version 249
+Include: /usr/share/cmake-3.22/Modules/CMakeAfbTemplates/cmake/cmake.d/02-variables.cmake
+-- Check gcc_minimal_version (found gcc version 11.3.0)         (found g++ version 11.3.0)
+Include: /usr/share/cmake-3.22/Modules/CMakeAfbTemplates/cmake/cmake.d/03-macros.cmake
+Include: /usr/share/cmake-3.22/Modules/CMakeAfbTemplates/cmake/cmake.d/04-extra_targets.cmake
 -- Overwrite the CMAKE default install prefix with /root/opt
 .. Warning: RSYNC_TARGET RSYNC_PREFIX not defined 'make remote-target-populate' not instanciated
 -- Notice: Using default test widget configuration\'s file.
@@ -96,16 +96,12 @@ Include: /usr/share/cmake/Modules/CMakeAfbTemplates/cmake/cmake.d/04-extra_targe
 
 # Run make
 $ make
-Scanning dependencies of target test-files
-[  3%] Generating test-files
-[  3%] Built target test-files
-Scanning dependencies of target fixture-files
-[  7%] Generating fixture-files
-[  7%] Built target fixture-files
-Scanning dependencies of target project_populate_fixture-files
-[ 11%] Generating package-test/var/fixture-files
-[ 11%] Built target project_populate_fixture-files
-Scanning dependencies of target prepare_package
+[  3%] Built target autobuild
+[  7%] Generating test-files
+Warning: LUA_CHECKER not found. Not verification made on files !
+[  7%] Built target test-files
+[ 11%] Generating package-test/var/test-files
+[ 11%] Built target project_populate_test-files
 [ 14%] Generating package
 [ 18%] Generating package/bin
 [ 22%] Generating package/etc
@@ -113,105 +109,86 @@ Scanning dependencies of target prepare_package
 [ 29%] Generating package/htdocs
 [ 33%] Generating package/var
 [ 33%] Built target prepare_package
-Scanning dependencies of target project_populate_test-files
-[ 37%] Generating package-test/var/test-files
-[ 37%] Built target project_populate_test-files
-Scanning dependencies of target prepare_package_test
-[ 40%] Generating package-test/bin
-[ 44%] Generating package-test/etc
-[ 48%] Generating package-test/lib
-[ 51%] Generating package-test/htdocs
-[ 59%] Built target prepare_package_test
-Scanning dependencies of target helloworld-skeleton
-[ 62%] Building C object helloworld-skeleton/CMakeFiles/helloworld-skeleton.dir/helloworld-service-binding.c.o
-[ 66%] Linking C shared module afb-helloworld-skeleton.so
-[ 66%] Built target helloworld-skeleton
-Scanning dependencies of target project_populate_helloworld-skeleton
-[ 70%] Generating package/lib/afb-helloworld-skeleton.so
-[ 70%] Built target project_populate_helloworld-skeleton
-Scanning dependencies of target helloworld-subscribe-event
-[ 74%] Building C object helloworld-subscribe-event/CMakeFiles/helloworld-subscribe-event.dir/helloworld-event-service-binding.c.o
-/root/helloworld-binding/helloworld-subscribe-event/helloworld-event-service-binding.c: In function ‘timerCount’:
-/root/helloworld-binding/helloworld-subscribe-event/helloworld-event-service-binding.c:32:6: warning: variable ‘listeners’ set but not used [-Wunused-but-set-variable]
-   32 |  int listeners = 0;
-      |      ^~~~~~~~~
-/root/helloworld-binding/helloworld-subscribe-event/helloworld-event-service-binding.c: In function ‘startTimer’:
-/root/helloworld-binding/helloworld-subscribe-event/helloworld-event-service-binding.c:47:37: warning: passing argument 3 of ‘TimerEvtStart’ from incompatible pointer type [-Wincompatible-pointer-types]
-   47 |  TimerEvtStart(request->api, timer, timerCount, NULL);
-      |                                     ^~~~~~~~~~
-      |                                     |
-      |                                     void (*)()
-In file included from /root/helloworld-binding/helloworld-subscribe-event/helloworld-event-service-binding.c:24:
-/usr/include/afb-timer.h:45:84: note: expected ‘timerCallbackT’ {aka ‘int (*)(struct TimerHandleS *)’} but argument is of type ‘void (*)()’
-   45 | extern void TimerEvtStart(afb_api_t api, TimerHandleT *timerHandle, timerCallbackT callback, void *context);
-      |                                                                     ~~~~~~~~~~~~~~~^~~~~~~~
-/root/helloworld-binding/helloworld-subscribe-event/helloworld-event-service-binding.c:46:13: warning: ‘timeruid’ is used uninitialized in this function [-Wuninitialized]
-   46 |  timer->uid = timeruid;
-      |  ~~~~~~~~~~~^~~~~~~~~~
-[ 77%] Linking C shared module afb-helloworld-subscribe-event.so
-[ 77%] Built target helloworld-subscribe-event
-Scanning dependencies of target project_populate_helloworld-subscribe-event
-[ 81%] Generating package/lib/afb-helloworld-subscribe-event.so
-[ 81%] Built target project_populate_helloworld-subscribe-event
-Scanning dependencies of target htdocs
-[ 85%] Generating htdocs
-[ 85%] Built target htdocs
-Scanning dependencies of target project_populate_htdocs
-[ 88%] Generating package/htdocs/htdocs
-[ 88%] Built target project_populate_htdocs
-Scanning dependencies of target helloworld-config
-[ 92%] Generating helloworld-config
+[ 37%] Generating package-test/bin
+[ 40%] Generating package-test/etc
+[ 44%] Generating package-test/lib
+[ 48%] Generating package-test/htdocs
+[ 55%] Built target prepare_package_test
+[ 59%] Building C object helloworld-skeleton/CMakeFiles/helloworld-skeleton.dir/helloworld-service-binding.c.o
+[ 62%] Linking C shared module afb-helloworld-skeleton.so
+[ 62%] Built target helloworld-skeleton
+[ 66%] Generating package/lib/afb-helloworld-skeleton.so
+[ 66%] Built target project_populate_helloworld-skeleton
+[ 70%] Building C object helloworld-subscribe-event/CMakeFiles/helloworld-subscribe-event.dir/helloworld-event-service-binding.c.o
+/root/helloworld-binding/helloworld-subscribe-event/helloworld-event-service-binding.c: In function 'timerCount':
+/root/helloworld-binding/helloworld-subscribe-event/helloworld-event-service-binding.c:33:13: warning: variable 'listeners' set but not used [-Wunused-but-set-variable]
+   33 |         int listeners;
+      |             ^~~~~~~~~
+[ 74%] Linking C shared module afb-helloworld-subscribe-event.so
+[ 74%] Built target helloworld-subscribe-event
+[ 77%] Generating package/lib/afb-helloworld-subscribe-event.so
+[ 77%] Built target project_populate_helloworld-subscribe-event
+[ 81%] Generating htdocs
+[ 81%] Built target htdocs
+[ 85%] Generating package/htdocs/htdocs
+[ 85%] Built target project_populate_htdocs
+[ 88%] Generating helloworld-config
 Warning: JSON_CHECKER not found. Not verification made on files !
-[ 92%] Built target helloworld-config
-Scanning dependencies of target project_populate_helloworld-config
-[ 96%] Generating package-test/etc/helloworld-config
-[ 96%] Built target project_populate_helloworld-config
-Scanning dependencies of target populate
-[ 96%] Built target populate
-Scanning dependencies of target helloworld-binding_build_done
-++ Debug from afb-binder --port=1234  --ldpaths=package --workdir=. --roothttp=../htdocs --token= --verbose 
-[ 96%] Built target helloworld-binding_build_done
-Scanning dependencies of target autobuild
-[100%] Built target autobuild
+[ 88%] Built target helloworld-config
+[ 92%] Generating package-test/etc/helloworld-config
+[ 92%] Built target project_populate_helloworld-config
+[ 96%] Generating fixture-files
+Warning: LUA_CHECKER not found. Not verification made on files !
+[ 96%] Built target fixture-files
+[100%] Generating package-test/var/fixture-files
+[100%] Built target project_populate_fixture-files
+[100%] Built target populate
+++ Debug from afb-binder --port=1234  --ldpaths=package --workdir=. --roothttp=../htdocs --verbose 
+[100%] Built target helloworld-binding_build_done
 
 # Run make widget
 $ make widget
+Warning: LUA_CHECKER not found. Not verification made on files !
 [  2%] Built target test-files
-[  5%] Built target fixture-files
-[  8%] Generating package-test/var/fixture-files
-[  8%] Built target project_populate_fixture-files
-[ 11%] Generating package/bin
-[ 13%] Generating package/etc
-[ 25%] Built target prepare_package
-[ 27%] Generating package-test/var/test-files
-[ 27%] Built target project_populate_test-files
-[ 30%] Generating package-test/bin
-[ 33%] Generating package-test/lib
-[ 44%] Built target prepare_package_test
-[ 50%] Built target helloworld-skeleton
-[ 52%] Built target project_populate_helloworld-skeleton
-[ 58%] Built target helloworld-subscribe-event
-[ 61%] Built target project_populate_helloworld-subscribe-event
-[ 63%] Built target htdocs
-[ 66%] Generating package/htdocs/htdocs
-[ 66%] Built target project_populate_htdocs
+[  5%] Generating package-test/var/test-files
+[  5%] Built target project_populate_test-files
+[  8%] Generating package/bin
+[ 11%] Generating package/etc
+[ 22%] Built target prepare_package
+[ 25%] Generating package-test/bin
+[ 27%] Generating package-test/lib
+[ 38%] Built target prepare_package_test
+Consolidate compiler generated dependencies of target helloworld-skeleton
+[ 44%] Built target helloworld-skeleton
+[ 47%] Built target project_populate_helloworld-skeleton
+Consolidate compiler generated dependencies of target helloworld-subscribe-event
+[ 52%] Built target helloworld-subscribe-event
+[ 55%] Built target project_populate_helloworld-subscribe-event
+[ 58%] Built target htdocs
+[ 61%] Generating package/htdocs/htdocs
+[ 61%] Built target project_populate_htdocs
 Warning: JSON_CHECKER not found. Not verification made on files !
-[ 69%] Built target helloworld-config
-[ 72%] Generating package-test/etc/helloworld-config
-[ 72%] Built target project_populate_helloworld-config
+[ 63%] Built target helloworld-config
+[ 66%] Generating package-test/etc/helloworld-config
+[ 66%] Built target project_populate_helloworld-config
+Warning: LUA_CHECKER not found. Not verification made on files !
+[ 69%] Built target fixture-files
+[ 72%] Generating package-test/var/fixture-files
+[ 72%] Built target project_populate_fixture-files
 [ 72%] Built target populate
-Scanning dependencies of target test_widget_files
-[ 75%] Generating package-test/icon.png
-[ 77%] Generating package-test/config.xml
-[ 80%] Generating package-test/bin
-[ 83%] Generating package-test/bin/launcher
-[ 86%] Built target test_widget_files
-Scanning dependencies of target test_widget
-[ 88%] Generating helloworld-binding-test.wgt
+[ 75%] Generating package/icon.png
+[ 77%] Generating package/config.xml
+[ 80%] Built target widget_files
+[ 83%] Generating package-test/icon.png
+[ 86%] Generating package-test/config.xml
+[ 88%] Generating package-test/bin
+[ 91%] Generating package-test/bin/launcher
+[ 94%] Built target test_widget_files
+[ 97%] Generating helloworld-binding-test.wgt
 Warning: Test widget will be built using Zip, NOT using the Application Framework widget pack command.
   adding: bin/ (stored 0%)
-  adding: bin/launcher (deflated 57%)
-  adding: config.xml (deflated 56%)
+  adding: bin/launcher (deflated 50%)
+  adding: config.xml (deflated 57%)
   adding: etc/ (stored 0%)
   adding: etc/aft-helloworld.json (deflated 73%)
   adding: htdocs/ (stored 0%)
@@ -220,31 +197,26 @@ Warning: Test widget will be built using Zip, NOT using the Application Framewor
   adding: var/ (stored 0%)
   adding: var/mapi_helloworld.lua (deflated 43%)
   adding: var/mapi_tests.lua (deflated 50%)
-  adding: var/helloworld.lua (deflated 55%)
-[ 88%] Built target test_widget
-Scanning dependencies of target widget_files
-[ 91%] Generating package/icon.png
-[ 94%] Generating package/config.xml
-[ 97%] Built target widget_files
-Scanning dependencies of target widget
+  adding: var/helloworld.lua (deflated 54%)
+[ 97%] Built target test_widget
 [100%] Generating helloworld-binding.wgt
 Warning: Widget will be built using Zip, NOT using the Application Framework widget pack command.
   adding: bin/ (stored 0%)
-  adding: config.xml (deflated 55%)
+  adding: config.xml (deflated 52%)
   adding: etc/ (stored 0%)
   adding: htdocs/ (stored 0%)
-  adding: htdocs/iotbzh-Binding.css (deflated 47%)
-  adding: htdocs/iotbzh-Binding.js (deflated 64%)
+  adding: htdocs/assets/ (stored 0%)
+  adding: htdocs/assets/background_iot_bzh_light.jpg (deflated 16%)
+  adding: htdocs/assets/favicon.ico (deflated 39%)
+  adding: htdocs/assets/iot-bzh-logo-small.png (deflated 0%)
   adding: htdocs/index.html (deflated 62%)
   adding: htdocs/AFB-websock.js (deflated 70%)
-  adding: htdocs/assets/ (stored 0%)
-  adding: htdocs/assets/iot-bzh-logo-small.png (deflated 0%)
-  adding: htdocs/assets/favicon.ico (deflated 39%)
-  adding: htdocs/assets/background_iot_bzh_light.jpg (deflated 16%)
+  adding: htdocs/iotbzh-Binding.js (deflated 64%)
+  adding: htdocs/iotbzh-Binding.css (deflated 47%)
   adding: icon.png (stored 0%)
   adding: lib/ (stored 0%)
-  adding: lib/afb-helloworld-skeleton.so (deflated 81%)
-  adding: lib/afb-helloworld-subscribe-event.so (deflated 79%)
+  adding: lib/afb-helloworld-skeleton.so (deflated 66%)
+  adding: lib/afb-helloworld-subscribe-event.so (deflated 63%)
   adding: var/ (stored 0%)
 ++ Install widget file using in the target : afm-util install helloworld-binding.wgt
 [100%] Built target widget
@@ -254,12 +226,13 @@ From now, you can now start the tests with the `afm-test` script of `afb-test` p
 
 ```bash
 $ afm-test package package-test/
+/usr/bin/afm-test: line 241: 14342 Killed                  "${BINDER}" --name="${PROCNAME}" --port=${PORTSERVICE} --workdir="${SERVICEPACKAGEDIR}" --ldpaths=. "${SOCKETSERVER[@]}" -vvv &> "${LOGFILESERVICE}"
 ---------------- Test result ------------------
-Test result from: /root/helloworld-binding/build/package-test/helloworld.tap
-# Ran 6 tests in 0.005 seconds, 5 successes, 0 failures, 0 errors
-
 Test result from: /root/helloworld-binding/build/package-test/mapi_tests.tap
-# Ran 4 tests in 0.004 seconds, 4 successes, 0 failures, 0 error, 1 skipped
+# Ran 4 tests in 0.001 seconds, 4 successes, 0 failures, 1 skipped
+
+Test result from: /root/helloworld-binding/build/package-test/helloworld.tap
+# Ran 5 tests in 0.001 seconds, 5 successes, 0 failures
 
 -----------------------------------------------
 To see which test passed or not, see test files.
@@ -280,7 +253,7 @@ $ sudo dnf install helloworld-binding
 # Installation of the redtest corresponding package
 $ sudo dnf install helloworld-binding-redtest
 # Run the tests (through redtests)
-$ /usr/lib/helloworld-binding-redtest/redtest/run-redtest
+$ /usr/libexec/redtest/helloworld-binding/run-redtest
 find: ‘/home/0/app-data/helloworld-binding-test’: No such file or directory
 PASS: helloworld-binding-test started with pid=9425
 ~~~~~ Begin testPingSuccess ~~~~~
