@@ -16,7 +16,12 @@
 # limitations under the License.
 ###########################################################################
 
-if("${OSRELEASE}" STREQUAL "poky-agl" OR "${OSRELEASE}" STREQUAL "yocto-build" OR "${OSRELEASE}" STREQUAL "redpesk")
+if(NOT DEFINED ONTARGET)
+	if("${OSRELEASE}" STREQUAL "poky-agl" OR "${OSRELEASE}" STREQUAL "yocto-build" OR "${OSRELEASE}" STREQUAL "redpesk")
+		set(ONTARGET YES)
+	endif()
+endif()
+if(ONTARGET)
 	set(AFM_TEST "afm-test.target.sh")
 else()
 	set(AFM_TEST "afm-test.native.sh")

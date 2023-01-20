@@ -22,3 +22,5 @@ include(CTest)
 enable_testing()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/conf.d/cmake/config.cmake)
+
+include(./afm-test.cmake)
