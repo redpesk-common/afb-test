@@ -72,7 +72,7 @@ set (PKG_REQUIRED_LIST
 	libsystemd>=222
 	afb-binding
 	afb-libcontroller
-	afb-helpers
+	afb-helpers3
 )
 
 # Prefix path where will be installed the files
