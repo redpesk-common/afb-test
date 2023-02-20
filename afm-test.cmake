@@ -16,15 +16,17 @@
 # limitations under the License.
 ###########################################################################
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/afm-test.native.sh.in ${CMAKE_CURRENT_BINARY_DIR}/afm-test.native.sh @ONLY)
+
 if(NOT DEFINED ONTARGET)
 	if("${OSRELEASE}" STREQUAL "poky-agl" OR "${OSRELEASE}" STREQUAL "yocto-build" OR "${OSRELEASE}" STREQUAL "redpesk")
 		set(ONTARGET YES)
 	endif()
 endif()
 if(ONTARGET)
-	set(AFM_TEST "afm-test.target.sh")
+	set(AFM_TEST "${CMAKE_CURRENT_SOURCE_DIR}/afm-test.target.sh")
 else()
-	set(AFM_TEST "afm-test.native.sh")
+	set(AFM_TEST "${CMAKE_CURRENT_BINARY_DIR}/afm-test.native.sh")
 endif()
 
-install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/${AFM_TEST} DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME afm-test)
+install(PROGRAMS ${AFM_TEST} DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME afm-test)

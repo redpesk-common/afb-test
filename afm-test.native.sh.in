@@ -39,7 +39,8 @@ EOF
 }
 
 BINDER="$(command -v afb-binder)"
-AFBTEST="/var/local/lib/afm/applications/afb-test/lib/aft.so"
+TSTAPPDIR="@AFM_APP_DIR@/@PROJECT_NAME@"
+AFBTEST="${TSTAPPDIR}/lib/aft.so"
 PORT=1234
 PORTSERVICE=$((PORT+1))
 TOKEN=

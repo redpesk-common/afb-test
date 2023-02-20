@@ -79,7 +79,7 @@ set (PKG_REQUIRED_LIST
 # Prefix path where will be installed the files
 # Default: /usr/local (need root permission to write in)
 # ------------------------------------------------------
-set(INSTALL_PREFIX /opt/RP CACHE PATH "INSTALL PREFIX PATH")
+set(AFM_APP_DIR ${CMAKE_INSTALL_PREFIX}/redpesk CACHE PATH "INSTALL PATH OF APPLICATIONS")
 
 # Customize link option
 # -----------------------------
@@ -129,8 +129,8 @@ set(INSTALL_PREFIX /opt/RP CACHE PATH "INSTALL PREFIX PATH")
 
 add_definitions(-DCONTROL_SUPPORT_LUA=1)
 add_definitions(-DLUA_GLOB_PATTERN="/var/?.lua\\\;")
-add_definitions(-DCONTROL_PLUGIN_PATH="./var:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/lib/plugins:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/var:${INSTALL_PREFIX}/${PROJECT_NAME}/lib/plugins:${INSTALL_PREFIX}/${PROJECT_NAME}/var:${CMAKE_BINARY_DIR}/package/lib/plugins:${CMAKE_BINARY_DIR}/package/var")
-add_definitions(-DCONTROL_CONFIG_PATH="./etc:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/etc:${INSTALL_PREFIX}/${PROJECT_NAME}/etc:${CMAKE_BINARY_DIR}/package/etc")
+add_definitions(-DCONTROL_PLUGIN_PATH="./var:${AFM_APP_DIR}/${PROJECT_NAME}/lib/plugins:${AFM_APP_DIR}/${PROJECT_NAME}/var")
+add_definitions(-DCONTROL_CONFIG_PATH="./etc:${AFM_APP_DIR}/${PROJECT_NAME}/etc")
 add_definitions(-DCTL_PLUGIN_MAGIC=1286576532)
 add_definitions(-DAFB_BINDING_VERSION=3)
 
@@ -191,7 +191,7 @@ set(AFB_REMPORT "1234" CACHE PATH "Default binder listening port")
 
 # Print a helper message when every thing is finished
 # ----------------------------------------------------
-set(CLOSING_MESSAGE "Typical binding launch: afb-binder --name ${PROJECT_NAME} --port=${AFB_REMPORT} --workdir=package-test --ldpaths=/opt/RP/lib64/afb:../package/lib --token=\"${AFB_TOKEN}\"")
+set(CLOSING_MESSAGE "Typical binding launch: afb-binder --name ${PROJECT_NAME} --port=${AFB_REMPORT} --workdir=package-test --ldpaths=package/lib")
 set(PACKAGE_MESSAGE "Install widget file using in the target : afm-util install ${PROJECT_NAME}.wgt")
 
 # Optional schema validator about now only XML, LUA and JSON
