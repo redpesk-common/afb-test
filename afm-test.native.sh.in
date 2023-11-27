@@ -207,16 +207,25 @@ gen_test_env_var(){
 	export AFT_PLUGIN_PATH
 }
 
+get_proc_name() {
+	local base="$1"
+	local yml="${base}/.rpconfig/manifest.yml" xml="${base}/config.xml"
+	if [ -f "$yml" ]; then
+		awk '$1=="id:"{print $2;exit}' "$yml" | tr '[:upper:]' '[:lower:]'
+	elif [ -f "$xml" ]; then
+		grep -Eo 'id=".*" ' "$xml" | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]'
+	else
+		echo "Error: can't find neither config.xml nor manifest.yml file in $base"
+		cleanNexit 5
+	fi
+}
+
 gen_test_var(){
 	TESTCFGFILE=$(find "${TESTPACKAGEDIR}" -name "aft-*.json" -print | head -n1)
 	TESTAPINAME=$(grep '\"api\"' "${TESTCFGFILE}" | cut -d'"' -f4)
 
-	if [ ! -f "${TESTPACKAGEDIR}/config.xml" ]; then
-		echo "Error: can't find config.xml file for this project. Please call 'make widget'"
-		cleanNexit 5
-	fi
-	TESTPROCNAME="afbd-$(grep -Eo 'id=".*" ' "${TESTPACKAGEDIR}/config.xml" | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]')"
-	PROCNAME="afbd-$(grep -Eo 'id=".*" ' "${SERVICEPACKAGEDIR}/config.xml" | cut -d'=' -f2 | tr -d '" '| tr '[:upper:]' '[:lower:]')"
+	TESTPROCNAME="afbd-$(get_proc_name "${TESTPACKAGEDIR}")"
+	PROCNAME="afbd-$(get_proc_name "${SERVICEPACKAGEDIR}")"
 
 	export TESTCFGFILE
 	export TESTAPINAME
@@ -294,14 +303,23 @@ run_test() {
 	tail --pid=${B_PID} -f /dev/null
 }
 
-gen_test_parameter() {
-	APIs=($(sed '/feature.*provided-api/,/feature/!d' "${SERVICEPACKAGEDIR}/config.xml" | grep -v feature| sed -r -e 's:.*"(.*)" v.*:\1:'))
+get_APIs() {
+	local base="$1"
+	local yml="${base}/.rpconfig/manifest.yml" xml="${base}/config.xml"
+	if [ -f "$yml" ]; then
+		APIs=($(awk 'm && $0~m{exit}m && /name:/{print $NF;next}/provided-api:/{sub("p.*$","");m="^"$0"[^ \t]";next}' "$yml"))
+	elif [ -f "$xml" ]; then
+		APIs=($(sed '/feature.*provided-api/,/feature/!d' "$xml" | grep -v feature| sed -r -e 's:.*"(.*)" v.*:\1:'))
+	fi
 	API=${APIs[0]}
-
 	if [ -z "$API" ] && [ "$MODE" = "SERVICE" ]; then
-		echo "Error: can't find config.xml file for this project. Please call 'make widget'"
+		echo "Error: can't find neither config.xml nor manifest.yml file in $base"
 		cleanNexit 2
 	fi
+}
+
+gen_test_parameter() {
+	get_APIs "${SERVICEPACKAGEDIR}"
 
 	SOCKETCLIENT=(${APIs[@]/#/--ws-client=unix:${TMPDIR}/})
 	SOCKETSERVER=(${APIs[@]/#/--ws-server=unix:${TMPDIR}/})
