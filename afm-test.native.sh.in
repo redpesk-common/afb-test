@@ -269,14 +269,14 @@ run_test() {
 	local inprogress=true
 	while $inprogress; do
 		# check binder still alive
-		kill -s 0 ${B_PID} 2>/dev/null || return 1
+		kill -s 0 ${B_PID} 2>/dev/null || exit 1
 		# check sockets
 		inprogress=false
 		local s
 		for s in ${socks[@]}; do
 			if [[ ! -S $s ]]; then
 				# check timeout
-				((--decnt > 0)) || return 2
+				((--decnt > 0)) || exit 2
 				sleep 0.01
 				inprogress=true
 				break
